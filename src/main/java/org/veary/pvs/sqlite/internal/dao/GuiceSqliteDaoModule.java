@@ -22,9 +22,24 @@
  * SOFTWARE.
  */
 
-package org.veary.pvs.sqlite;
+package org.veary.pvs.sqlite.internal.dao;
 
-import org.veary.pvs.sqlite.internal.dao.GuiceSqliteInternalDaoModule;
+import org.veary.pvs.dao.AccountDataAccessObject;
+import org.veary.pvs.dao.DayBookDataAccessObject;
+import org.veary.pvs.dao.PeriodDataAccessObject;
+import org.veary.pvs.dao.SystemDataAccessObject;
+import org.veary.pvs.sqlite.jdbc.GuiceSqliteJdbcModule;
 
-public final class GuiceSqliteModule extends GuiceSqliteInternalDaoModule {
+public class GuiceSqliteDaoModule extends GuiceSqliteJdbcModule {
+
+    @Override
+    protected void configure() {
+        super.configure();
+
+        // DAO bindings
+        bind(AccountDataAccessObject.class).to(AccountDataAccessObjectImpl.class);
+        bind(PeriodDataAccessObject.class).to(PeriodDataAccessObjectImpl.class);
+        bind(DayBookDataAccessObject.class).to(DayBookDataAccessObjectImpl.class);
+        bind(SystemDataAccessObject.class).to(SystemDataAccessObjectImpl.class);
+    }
 }
