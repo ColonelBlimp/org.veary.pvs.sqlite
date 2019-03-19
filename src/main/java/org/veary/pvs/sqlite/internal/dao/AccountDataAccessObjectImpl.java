@@ -1,0 +1,149 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2019 ColonelBlimp
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package org.veary.pvs.sqlite.internal.dao;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.veary.pvs.core.Constants;
+import org.veary.pvs.dao.AccountDataAccessObject;
+import org.veary.pvs.model.Account;
+import org.veary.pvs.model.Account.Type;
+import org.veary.pvs.model.ModelFactory;
+import org.veary.pvs.sqlite.ConnectionManager;
+
+@Singleton
+final class AccountDataAccessObjectImpl extends AbstractDataAccessObject
+        implements AccountDataAccessObject {
+
+    private final Logger log = LogManager.getLogger(AccountDataAccessObjectImpl.class);
+
+    private final ModelFactory factory;
+
+    @Inject
+    protected AccountDataAccessObjectImpl(ConnectionManager manager, ModelFactory factory) {
+        super(manager);
+        this.factory = factory;
+    }
+
+    @Override
+    public Optional<Account> getById(int id) {
+        log.trace(Constants.LOG_CALLED);
+        List<Map<Object, Object>> results = executeSqlAndReturnList(
+            "SELECT * from account WHERE id=?",
+            Arrays.asList(String.valueOf(id))
+            );
+
+        return processSingleResult(results.get(0));
+    }
+
+    @Override
+    public Optional<Account> getByName(String uniqueName) {
+        log.trace(Constants.LOG_CALLED);
+
+        List<Map<Object, Object>> results = executeSqlAndReturnList(
+            "SELECT * from account WHERE name=?",
+            Arrays.asList(uniqueName)
+            );
+
+        return processSingleResult(results.get(0));
+    }
+
+    @Override
+    public List<Account> getAccounts() {
+        log.trace(Constants.LOG_CALLED);
+
+        List<Map<Object, Object>> results = executeSqlAndReturnList(
+            "SELECT * from account",
+            Arrays.asList()
+            );
+
+        List<Account> list = new ArrayList<>(results.size());
+        for(Map<Object, Object> row : results) {
+            Optional<Account> account = processSingleResult(row);
+            if (account.isPresent()) {
+                list.add(account.get());
+            }
+        }
+
+        return list;
+    }
+
+    @Override
+    public int createAccount(String uniqueName, Type type) {
+        log.trace(Constants.LOG_CALLED);
+
+        List<Map<Object, Object>> results = executeSqlAndReturnList(
+            "INSERT INTO account(name,type) VALUES(?,?)",
+            Arrays.asList(uniqueName, type.getValue())
+            );
+
+        return getRowId(results);
+    }
+
+    @Override
+    public boolean updateAccount(String uniqueName, String newUniqueName) {
+        log.trace(Constants.LOG_CALLED);
+
+        List<Map<Object, Object>> results = executeSqlAndReturnList(
+            "UPDATE account SET name=? WHERE name=?",
+            Arrays.asList(newUniqueName, uniqueName)
+            );
+
+        boolean retval = false;
+        if (getRowId(results) > 0) {
+            retval = true;
+        }
+        return retval;
+    }
+
+    @Override
+    public boolean deleteAccount(int id) {
+        log.trace(Constants.LOG_CALLED);
+
+        List<Map<Object, Object>> results = executeSqlAndReturnList(
+            "DELETE FROM account WHERE id=?",
+            Arrays.asList(String.valueOf(id))
+            );
+
+        boolean retval = false;
+        if (getRowId(results) > 0) {
+            retval = true;
+        }
+        return retval;
+    }
+
+    private Optional<Account> processSingleResult(Map<Object, Object> results) {
+        return Optional.ofNullable(this.factory.buildAccountObject(results));
+    }
+}

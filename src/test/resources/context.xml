@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<Context>
+  <Resource name="jdbc/pvs" 
+            auth="Container" 
+            type="javax.sql.DataSource" 
+            driverClassName="org.sqlite.JDBC"
+            url="jdbc:sqlite:${pvs.db.home}/pvs.db"
+            factory="org.apache.tomcat.dbcp.dbcp.BasicDataSourceFactory">
+  </Resource>
+</Context>
