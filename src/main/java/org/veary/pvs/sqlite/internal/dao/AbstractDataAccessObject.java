@@ -66,8 +66,7 @@ abstract class AbstractDataAccessObject {
      * Executes the given SQL returning a list of results (rows) if there are any.
      *
      * @param sql  the DML statement to be executed
-     * @param args a {@code List} of arguments to be inserted into the DML
-     *             statement.
+     * @param args a varargs list of Strings
      * @return {@code List<Map<Object, Object>>}. Cannot be {@code null}.
      */
     protected List<Map<Object, Object>> executeSqlAndReturnList(String sql, String... args) {
@@ -98,9 +97,7 @@ abstract class AbstractDataAccessObject {
                     }
                 }
             }
-        } catch (SQLException e) {
-            throw new DataAccessException(e);
-        }
+        } catch (SQLException e) { throw new DataAccessException(e); }
 
         return result;
     }

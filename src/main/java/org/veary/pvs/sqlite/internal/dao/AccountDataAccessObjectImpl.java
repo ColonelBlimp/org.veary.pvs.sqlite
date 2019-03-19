@@ -43,7 +43,7 @@ import org.veary.pvs.sqlite.ConnectionManager;
 
 @Singleton
 final class AccountDataAccessObjectImpl extends AbstractDataAccessObject
-    implements AccountDataAccessObject {
+implements AccountDataAccessObject {
 
     private final Logger log = LogManager.getLogger(AccountDataAccessObjectImpl.class);
 
@@ -58,14 +58,12 @@ final class AccountDataAccessObjectImpl extends AbstractDataAccessObject
     @Override
     public Optional<Account> getById(int id) {
         log.trace(Constants.LOG_CALLED);
-
         return processSingleResult("SELECT * from account WHERE id=?", String.valueOf(id));
     }
 
     @Override
     public Optional<Account> getByName(String uniqueName) {
         log.trace(Constants.LOG_CALLED);
-
         return processSingleResult("SELECT * from account WHERE name=?", uniqueName);
     }
 

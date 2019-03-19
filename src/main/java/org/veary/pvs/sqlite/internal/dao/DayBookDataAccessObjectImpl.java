@@ -40,7 +40,7 @@ import org.veary.pvs.model.ModelFactory;
 import org.veary.pvs.sqlite.ConnectionManager;
 
 final class DayBookDataAccessObjectImpl extends AbstractDataAccessObject
-    implements DayBookDataAccessObject {
+implements DayBookDataAccessObject {
 
     private final Logger log = LogManager.getLogger(DayBookDataAccessObjectImpl.class);
     private final ModelFactory factory;
@@ -54,14 +54,12 @@ final class DayBookDataAccessObjectImpl extends AbstractDataAccessObject
     @Override
     public Optional<DayBook> getById(int id) {
         log.trace(Constants.LOG_CALLED);
-
         return processSingleResult("SELECT * from daybook WHERE id=?", String.valueOf(id));
     }
 
     @Override
     public Optional<DayBook> getByName(String uniqueName) {
         log.trace(Constants.LOG_CALLED);
-
         return processSingleResult("SELECT * from daybook WHERE name=?", uniqueName);
     }
 
