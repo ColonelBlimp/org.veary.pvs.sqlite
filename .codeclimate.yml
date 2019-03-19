@@ -1,8 +1,18 @@
-engines:
-    duplication:
+version: "2"
+plugins:
+    similar-code:
         enabled: true
         config:
             languages:
                 java:
                     mass_threshold: 86
-                    
+checks:
+   method-lines:
+      config:
+         threshold: 30
+   argument-count:
+      config:
+         threshold: 7
+
+         
+         
