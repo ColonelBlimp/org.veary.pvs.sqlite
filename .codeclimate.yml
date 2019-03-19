@@ -35,11 +35,11 @@ checks:
   similar-code:
     enabled: true
     config:
-      threshold: 100
+      threshold: 88
   identical-code:
     enabled: true
     config:
-      threshold: 60
+      threshold: 53
   sonar-java:
     enabled: true
     config:
@@ -50,10 +50,8 @@ checks:
         - "java-basic"
         - "java-design"
 plugins:
- rubocop:
-  enabled: true
- eslint:
-  enabled: true
+  fixme:
+    enabled: true
 exclude_patterns:
 - "config/"
 - "db/"
