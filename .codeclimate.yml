@@ -2,7 +2,7 @@ version: "2"
 plugins:
     similar-code:
         config:
-           threshold: 90
+           threshold: 100
     identical-code:
        config:
           threshold: 70
