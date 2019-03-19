@@ -2,14 +2,18 @@ version: "2"
 plugins:
     similar-code:
         config:
+           enabled: true
            threshold: 120
     identical-code:
        config:
+          enabled: true
           threshold: 70
 checks:
    method-lines:
       config:
+         enabled: true
          threshold: 30
    argument-count:
       config:
+         enabled: true
          threshold: 7
