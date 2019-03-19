@@ -5,7 +5,7 @@ plugins:
         config:
             languages:
                 java:
-                    mass_threshold: 87
+                    mass_threshold: 88
 checks:
    method-lines:
       config:
