@@ -1,19 +1,68 @@
 version: "2"
-plugins:
-    similar-code:
-        config:
-           enabled: true
-           threshold: 120
-    identical-code:
-       config:
-          enabled: true
-          threshold: 70
 checks:
-   method-lines:
-      config:
-         enabled: true
-         threshold: 30
-   argument-count:
-      config:
-         enabled: true
-         threshold: 7
+  argument-count:
+    enabled: true
+    config:
+      threshold: 7
+  complex-logic:
+    enabled: true
+    config:
+      threshold: 5
+  file-lines:
+    enabled: true
+    config:
+      threshold: 250
+  method-complexity:
+    enabled: true
+    config:
+      threshold: 5
+  method-count:
+    enabled: true
+    config:
+      threshold: 20
+  method-lines:
+    enabled: true
+    config:
+      threshold: 30
+  nested-control-flow:
+    enabled: true
+    config:
+      threshold: 4
+  return-statements:
+    enabled: true
+    config:
+      threshold: 4
+  similar-code:
+    enabled: true
+    config:
+      threshold: 100
+  identical-code:
+    enabled: true
+    config:
+      threshold: 60
+  sonar-java:
+    enabled: true
+    config:
+      sonar.java.source: "8"
+      test_patterns:
+        - src/test/**
+      rules:
+        - "java-basic"
+        - "java-design"
+plugins:
+ rubocop:
+  enabled: true
+ eslint:
+  enabled: true
+exclude_patterns:
+- "config/"
+- "db/"
+- "dist/"
+- "features/"
+- "**/node_modules/"
+- "script/"
+- "**/spec/"
+- "**/test/"
+- "**/tests/"
+- "**/vendor/"
+- "**/*.d.ts"
