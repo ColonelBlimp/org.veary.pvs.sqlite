@@ -25,11 +25,9 @@
 package org.veary.pvs.sqlite.internal.dao;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -75,8 +73,7 @@ final class AccountDataAccessObjectImpl extends AbstractDataAccessObject
     public List<Account> getAccounts() {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList("SELECT * from account",
-            Arrays.asList());
+        List<Map<Object, Object>> results = executeSqlAndReturnList("SELECT * from account");
 
         List<Account> list = new ArrayList<>(results.size());
         for (Map<Object, Object> row : results) {
@@ -94,8 +91,8 @@ final class AccountDataAccessObjectImpl extends AbstractDataAccessObject
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "INSERT INTO account(name,type) VALUES(?,?)",
-            Arrays.asList(uniqueName, type.getValue()));
+            "INSERT INTO account(name,type) VALUES(?,?)", uniqueName,
+            String.valueOf(type.getValue()));
 
         return getRowId(results);
     }
@@ -105,7 +102,7 @@ final class AccountDataAccessObjectImpl extends AbstractDataAccessObject
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "UPDATE account SET name=? WHERE name=?", Arrays.asList(newUniqueName, uniqueName));
+            "UPDATE account SET name=? WHERE name=?", newUniqueName, uniqueName);
 
         boolean retval = false;
         if (getRowId(results) > 0) {
@@ -119,7 +116,7 @@ final class AccountDataAccessObjectImpl extends AbstractDataAccessObject
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "DELETE FROM account WHERE id=?", Arrays.asList(String.valueOf(id)));
+            "DELETE FROM account WHERE id=?", String.valueOf(id));
 
         boolean retval = false;
         if (getRowId(results) > 0) {
@@ -131,9 +128,7 @@ final class AccountDataAccessObjectImpl extends AbstractDataAccessObject
     private Optional<Account> processSingleResult(String sql, String... args) {
         log.trace(Constants.LOG_CALLED);
 
-        List<Object> params = new ArrayList<>();
-        Stream.of(args).forEach(param -> params.add(param));
-        List<Map<Object, Object>> results = executeSqlAndReturnList(sql, params);
+        List<Map<Object, Object>> results = executeSqlAndReturnList(sql, args);
 
         return Optional.ofNullable(this.factory.buildAccountObject(results.get(0)));
     }

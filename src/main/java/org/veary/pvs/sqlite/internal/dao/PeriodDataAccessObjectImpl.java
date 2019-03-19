@@ -25,11 +25,9 @@
 package org.veary.pvs.sqlite.internal.dao;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -71,8 +69,7 @@ final class PeriodDataAccessObjectImpl extends AbstractDataAccessObject
     public List<Period> getPeriods() {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList("SELECT * from period",
-            Arrays.asList());
+        List<Map<Object, Object>> results = executeSqlAndReturnList("SELECT * from period");
 
         List<Period> list = new ArrayList<>(results.size());
         for (Map<Object, Object> row : results) {
@@ -90,7 +87,7 @@ final class PeriodDataAccessObjectImpl extends AbstractDataAccessObject
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "INSERT INTO period(name) VALUES(?)", Arrays.asList(uniqueName));
+            "INSERT INTO period(name) VALUES(?)", uniqueName);
 
         return getRowId(results);
     }
@@ -100,7 +97,7 @@ final class PeriodDataAccessObjectImpl extends AbstractDataAccessObject
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "UPDATE period SET name=? WHERE name=?", Arrays.asList(newUniqueName, uniqueName));
+            "UPDATE period SET name=? WHERE name=?", newUniqueName, uniqueName);
 
         boolean retval = false;
         if (getRowId(results) > 0) {
@@ -114,7 +111,7 @@ final class PeriodDataAccessObjectImpl extends AbstractDataAccessObject
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "DELETE FROM period WHERE id=?", Arrays.asList(String.valueOf(id)));
+            "DELETE FROM period WHERE id=?", String.valueOf(id));
 
         boolean retval = false;
         if (getRowId(results) > 0) {
@@ -126,9 +123,7 @@ final class PeriodDataAccessObjectImpl extends AbstractDataAccessObject
     private Optional<Period> processSingleResult(String sql, String... args) {
         log.trace(Constants.LOG_CALLED);
 
-        List<Object> params = new ArrayList<>();
-        Stream.of(args).forEach(param -> params.add(param));
-        List<Map<Object, Object>> results = executeSqlAndReturnList(sql, params);
+        List<Map<Object, Object>> results = executeSqlAndReturnList(sql, args);
 
         return Optional.ofNullable(this.factory.buildPeriodObject(results.get(0)));
     }

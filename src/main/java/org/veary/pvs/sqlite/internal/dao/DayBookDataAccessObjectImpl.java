@@ -25,11 +25,9 @@
 package org.veary.pvs.sqlite.internal.dao;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -71,8 +69,7 @@ final class DayBookDataAccessObjectImpl extends AbstractDataAccessObject
     public List<DayBook> getDayBooks() {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList("SELECT * from daybook",
-            Arrays.asList());
+        List<Map<Object, Object>> results = executeSqlAndReturnList("SELECT * from daybook");
 
         List<DayBook> list = new ArrayList<>(results.size());
         for (Map<Object, Object> row : results) {
@@ -90,8 +87,8 @@ final class DayBookDataAccessObjectImpl extends AbstractDataAccessObject
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "INSERT INTO daybook(name,period_id) VALUES(?,?)",
-            Arrays.asList(uniqueName, String.valueOf(periodId)));
+            "INSERT INTO daybook(name,period_id) VALUES(?,?)", uniqueName,
+            String.valueOf(periodId));
 
         return getRowId(results);
     }
@@ -101,7 +98,7 @@ final class DayBookDataAccessObjectImpl extends AbstractDataAccessObject
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "UPDATE daybook SET name=? WHERE name=?", Arrays.asList(newUniqueName, uniqueName));
+            "UPDATE daybook SET name=? WHERE name=?", newUniqueName, uniqueName);
 
         boolean retval = false;
         if (getRowId(results) > 0) {
@@ -115,7 +112,7 @@ final class DayBookDataAccessObjectImpl extends AbstractDataAccessObject
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "DELETE FROM daybook WHERE id=?", Arrays.asList(String.valueOf(id)));
+            "DELETE FROM daybook WHERE id=?", String.valueOf(id));
 
         boolean retval = false;
         if (getRowId(results) > 0) {
@@ -127,9 +124,7 @@ final class DayBookDataAccessObjectImpl extends AbstractDataAccessObject
     private Optional<DayBook> processSingleResult(String sql, String... args) {
         log.trace(Constants.LOG_CALLED);
 
-        List<Object> params = new ArrayList<>();
-        Stream.of(args).forEach(param -> params.add(param));
-        List<Map<Object, Object>> results = executeSqlAndReturnList(sql, params);
+        List<Map<Object, Object>> results = executeSqlAndReturnList(sql, args);
 
         return Optional.ofNullable(this.factory.buildDayBookObject(results.get(0)));
     }

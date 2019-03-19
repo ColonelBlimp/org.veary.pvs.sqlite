@@ -55,6 +55,7 @@ abstract class AbstractDataAccessObject {
 
     /**
      * Constructor.
+     *
      * @param manager a {@link ConnectionManager} object injected at the subclass.
      */
     protected AbstractDataAccessObject(ConnectionManager manager) {
@@ -63,12 +64,15 @@ abstract class AbstractDataAccessObject {
 
     /**
      * Executes the given SQL returning a list of results (rows) if there are any.
-     * @param sql the DML statement to be executed
-     * @param args a {@code List} of arguments to be inserted into the DML statement.
+     *
+     * @param sql  the DML statement to be executed
+     * @param args a {@code List} of arguments to be inserted into the DML
+     *             statement.
      * @return {@code List<Map<Object, Object>>}. Cannot be {@code null}.
      */
-    protected List<Map<Object, Object>> executeSqlAndReturnList(String sql, List<Object> args) {
+    protected List<Map<Object, Object>> executeSqlAndReturnList(String sql, String... args) {
         log.trace(Constants.LOG_CALLED);
+
         List<Map<Object, Object>> result = new ArrayList<>(0);
 
         try {
@@ -77,7 +81,9 @@ abstract class AbstractDataAccessObject {
                     PreparedStatement.RETURN_GENERATED_KEYS)) {
                     int index = 1;
 
-                    for (Object arg : args) { stmt.setObject(index++, arg); }
+                    for (Object arg : args) {
+                        stmt.setObject(index++, arg);
+                    }
 
                     if (sql.startsWith("SELECT")) {
                         try (ResultSet rset = stmt.executeQuery()) {
@@ -92,16 +98,19 @@ abstract class AbstractDataAccessObject {
                     }
                 }
             }
-        } catch (SQLException e) { throw new DataAccessException(e); }
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
+        }
 
         return result;
     }
 
     /**
      * Returns the identifier (id) of the last inserted row.
+     *
      * @param results a {@code List<Map<Object, Object>>}
-     * @return if the value is {@code zero} then nothing happened, otherwise the unique
-     *         identifier of the row acted upon.
+     * @return if the value is {@code zero} then nothing happened, otherwise the
+     *         unique identifier of the row acted upon.
      */
     protected int getRowId(List<Map<Object, Object>> results) {
         int rowid = 0;
@@ -115,6 +124,7 @@ abstract class AbstractDataAccessObject {
     /**
      * Takes a {@code ResultSet} and converts each row to a {@code Map} inserted
      * into a {@code List}.
+     *
      * @param rset a {@code ResultSet}
      * @return a {@code List<Map<Object, Object>>}, cannot be {@code null}.
      * @throws SQLException if there is a problem accessing the {@code ResultSet}
