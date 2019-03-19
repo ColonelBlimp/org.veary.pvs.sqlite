@@ -61,14 +61,14 @@ final class AccountDataAccessObjectImpl extends AbstractDataAccessObject
     public Optional<Account> getById(int id) {
         log.trace(Constants.LOG_CALLED);
 
-        return processResult("SELECT * from account WHERE id=?", String.valueOf(id));
+        return processSingleResult("SELECT * from account WHERE id=?", String.valueOf(id));
     }
 
     @Override
     public Optional<Account> getByName(String uniqueName) {
         log.trace(Constants.LOG_CALLED);
 
-        return processResult("SELECT * from account WHERE name=?", uniqueName);
+        return processSingleResult("SELECT * from account WHERE name=?", uniqueName);
     }
 
     @Override
@@ -128,7 +128,7 @@ final class AccountDataAccessObjectImpl extends AbstractDataAccessObject
         return retval;
     }
 
-    private Optional<Account> processResult(String sql, String... args) {
+    private Optional<Account> processSingleResult(String sql, String... args) {
         log.trace(Constants.LOG_CALLED);
 
         List<Object> params = new ArrayList<>();

@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -56,38 +57,26 @@ final class PeriodDataAccessObjectImpl extends AbstractDataAccessObject
     public Optional<Period> getById(int id) {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "SELECT * from period WHERE id=?",
-            Arrays.asList(String.valueOf(id))
-            );
-
-        return processSingleResult(results.get(0));
+        return processSingleResult("SELECT * from period WHERE id=?", String.valueOf(id));
     }
 
     @Override
     public Optional<Period> getByName(String uniqueName) {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "SELECT * from period WHERE name=?",
-            Arrays.asList(uniqueName)
-            );
-
-        return processSingleResult(results.get(0));
+        return processSingleResult("SELECT * from period WHERE name=?", uniqueName);
     }
 
     @Override
     public List<Period> getPeriods() {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "SELECT * from period",
-            Arrays.asList()
-            );
+        List<Map<Object, Object>> results = executeSqlAndReturnList("SELECT * from period",
+            Arrays.asList());
 
         List<Period> list = new ArrayList<>(results.size());
-        for(Map<Object, Object> row : results) {
-            Optional<Period> object = processSingleResult(row);
+        for (Map<Object, Object> row : results) {
+            Optional<Period> object = Optional.ofNullable(this.factory.buildPeriodObject(row));
             if (object.isPresent()) {
                 list.add(object.get());
             }
@@ -101,9 +90,7 @@ final class PeriodDataAccessObjectImpl extends AbstractDataAccessObject
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "INSERT INTO period(name) VALUES(?)",
-            Arrays.asList(uniqueName)
-            );
+            "INSERT INTO period(name) VALUES(?)", Arrays.asList(uniqueName));
 
         return getRowId(results);
     }
@@ -113,9 +100,7 @@ final class PeriodDataAccessObjectImpl extends AbstractDataAccessObject
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "UPDATE period SET name=? WHERE name=?",
-            Arrays.asList(newUniqueName, uniqueName)
-            );
+            "UPDATE period SET name=? WHERE name=?", Arrays.asList(newUniqueName, uniqueName));
 
         boolean retval = false;
         if (getRowId(results) > 0) {
@@ -129,9 +114,7 @@ final class PeriodDataAccessObjectImpl extends AbstractDataAccessObject
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "DELETE FROM period WHERE id=?",
-            Arrays.asList(String.valueOf(id))
-            );
+            "DELETE FROM period WHERE id=?", Arrays.asList(String.valueOf(id)));
 
         boolean retval = false;
         if (getRowId(results) > 0) {
@@ -140,7 +123,13 @@ final class PeriodDataAccessObjectImpl extends AbstractDataAccessObject
         return retval;
     }
 
-    private Optional<Period> processSingleResult(Map<Object, Object> results) {
-        return Optional.ofNullable(this.factory.buildPeriodObject(results));
+    private Optional<Period> processSingleResult(String sql, String... args) {
+        log.trace(Constants.LOG_CALLED);
+
+        List<Object> params = new ArrayList<>();
+        Stream.of(args).forEach(param -> params.add(param));
+        List<Map<Object, Object>> results = executeSqlAndReturnList(sql, params);
+
+        return Optional.ofNullable(this.factory.buildPeriodObject(results.get(0)));
     }
 }

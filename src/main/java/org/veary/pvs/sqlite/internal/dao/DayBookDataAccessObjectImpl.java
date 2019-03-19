@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -56,38 +57,26 @@ final class DayBookDataAccessObjectImpl extends AbstractDataAccessObject
     public Optional<DayBook> getById(int id) {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "SELECT * from daybook WHERE id=?",
-            Arrays.asList(String.valueOf(id))
-            );
-
-        return processSingleResult(results.get(0));
+        return processSingleResult("SELECT * from daybook WHERE id=?", String.valueOf(id));
     }
 
     @Override
     public Optional<DayBook> getByName(String uniqueName) {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "SELECT * from daybook WHERE name=?",
-            Arrays.asList(uniqueName)
-            );
-
-        return processSingleResult(results.get(0));
+        return processSingleResult("SELECT * from daybook WHERE name=?", uniqueName);
     }
 
     @Override
     public List<DayBook> getDayBooks() {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "SELECT * from daybook",
-            Arrays.asList()
-            );
+        List<Map<Object, Object>> results = executeSqlAndReturnList("SELECT * from daybook",
+            Arrays.asList());
 
         List<DayBook> list = new ArrayList<>(results.size());
-        for(Map<Object, Object> row : results) {
-            Optional<DayBook> object = processSingleResult(row);
+        for (Map<Object, Object> row : results) {
+            Optional<DayBook> object = Optional.ofNullable(this.factory.buildDayBookObject(row));
             if (object.isPresent()) {
                 list.add(object.get());
             }
@@ -102,8 +91,7 @@ final class DayBookDataAccessObjectImpl extends AbstractDataAccessObject
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(
             "INSERT INTO daybook(name,period_id) VALUES(?,?)",
-            Arrays.asList(uniqueName, String.valueOf(periodId))
-            );
+            Arrays.asList(uniqueName, String.valueOf(periodId)));
 
         return getRowId(results);
     }
@@ -113,9 +101,7 @@ final class DayBookDataAccessObjectImpl extends AbstractDataAccessObject
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "UPDATE daybook SET name=? WHERE name=?",
-            Arrays.asList(newUniqueName, uniqueName)
-            );
+            "UPDATE daybook SET name=? WHERE name=?", Arrays.asList(newUniqueName, uniqueName));
 
         boolean retval = false;
         if (getRowId(results) > 0) {
@@ -129,9 +115,7 @@ final class DayBookDataAccessObjectImpl extends AbstractDataAccessObject
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "DELETE FROM daybook WHERE id=?",
-            Arrays.asList(String.valueOf(id))
-            );
+            "DELETE FROM daybook WHERE id=?", Arrays.asList(String.valueOf(id)));
 
         boolean retval = false;
         if (getRowId(results) > 0) {
@@ -140,7 +124,13 @@ final class DayBookDataAccessObjectImpl extends AbstractDataAccessObject
         return retval;
     }
 
-    private Optional<DayBook> processSingleResult(Map<Object, Object> results) {
-        return Optional.ofNullable(this.factory.buildDayBookObject(results));
+    private Optional<DayBook> processSingleResult(String sql, String... args) {
+        log.trace(Constants.LOG_CALLED);
+
+        List<Object> params = new ArrayList<>();
+        Stream.of(args).forEach(param -> params.add(param));
+        List<Map<Object, Object>> results = executeSqlAndReturnList(sql, params);
+
+        return Optional.ofNullable(this.factory.buildDayBookObject(results.get(0)));
     }
 }
