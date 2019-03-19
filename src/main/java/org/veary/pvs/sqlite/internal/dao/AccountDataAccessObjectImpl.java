@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -44,7 +45,7 @@ import org.veary.pvs.sqlite.ConnectionManager;
 
 @Singleton
 final class AccountDataAccessObjectImpl extends AbstractDataAccessObject
-        implements AccountDataAccessObject {
+    implements AccountDataAccessObject {
 
     private final Logger log = LogManager.getLogger(AccountDataAccessObjectImpl.class);
 
@@ -59,38 +60,27 @@ final class AccountDataAccessObjectImpl extends AbstractDataAccessObject
     @Override
     public Optional<Account> getById(int id) {
         log.trace(Constants.LOG_CALLED);
-        List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "SELECT * from account WHERE id=?",
-            Arrays.asList(String.valueOf(id))
-            );
 
-        return processSingleResult(results.get(0));
+        return processResult("SELECT * from account WHERE id=?", String.valueOf(id));
     }
 
     @Override
     public Optional<Account> getByName(String uniqueName) {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "SELECT * from account WHERE name=?",
-            Arrays.asList(uniqueName)
-            );
-
-        return processSingleResult(results.get(0));
+        return processResult("SELECT * from account WHERE name=?", uniqueName);
     }
 
     @Override
     public List<Account> getAccounts() {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "SELECT * from account",
-            Arrays.asList()
-            );
+        List<Map<Object, Object>> results = executeSqlAndReturnList("SELECT * from account",
+            Arrays.asList());
 
         List<Account> list = new ArrayList<>(results.size());
-        for(Map<Object, Object> row : results) {
-            Optional<Account> account = processSingleResult(row);
+        for (Map<Object, Object> row : results) {
+            Optional<Account> account = Optional.ofNullable(this.factory.buildAccountObject(row));
             if (account.isPresent()) {
                 list.add(account.get());
             }
@@ -105,8 +95,7 @@ final class AccountDataAccessObjectImpl extends AbstractDataAccessObject
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(
             "INSERT INTO account(name,type) VALUES(?,?)",
-            Arrays.asList(uniqueName, type.getValue())
-            );
+            Arrays.asList(uniqueName, type.getValue()));
 
         return getRowId(results);
     }
@@ -116,9 +105,7 @@ final class AccountDataAccessObjectImpl extends AbstractDataAccessObject
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "UPDATE account SET name=? WHERE name=?",
-            Arrays.asList(newUniqueName, uniqueName)
-            );
+            "UPDATE account SET name=? WHERE name=?", Arrays.asList(newUniqueName, uniqueName));
 
         boolean retval = false;
         if (getRowId(results) > 0) {
@@ -132,9 +119,7 @@ final class AccountDataAccessObjectImpl extends AbstractDataAccessObject
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "DELETE FROM account WHERE id=?",
-            Arrays.asList(String.valueOf(id))
-            );
+            "DELETE FROM account WHERE id=?", Arrays.asList(String.valueOf(id)));
 
         boolean retval = false;
         if (getRowId(results) > 0) {
@@ -143,7 +128,13 @@ final class AccountDataAccessObjectImpl extends AbstractDataAccessObject
         return retval;
     }
 
-    private Optional<Account> processSingleResult(Map<Object, Object> results) {
-        return Optional.ofNullable(this.factory.buildAccountObject(results));
+    private Optional<Account> processResult(String sql, String... args) {
+        log.trace(Constants.LOG_CALLED);
+
+        List<Object> params = new ArrayList<>();
+        Stream.of(args).forEach(param -> params.add(param));
+        List<Map<Object, Object>> results = executeSqlAndReturnList(sql, params);
+
+        return Optional.ofNullable(this.factory.buildAccountObject(results.get(0)));
     }
 }
