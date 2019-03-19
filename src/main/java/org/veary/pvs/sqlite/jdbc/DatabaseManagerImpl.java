@@ -78,7 +78,7 @@ final class DatabaseManagerImpl implements DatabaseManager {
     }
 
     private void createPostingTable() {
-        sqliteExecute("CREATE TABLE IF NOT EXISTS ledger (journal_id INTEGER NOT NULL, account_id INTEGER NOT NULL, amount REAL NOT NULL, FOREIGN KEY(journal_id) REFERENCES journal(id) ON UPDATE RESTRICT ON DELETE RESTRICT, FOREIGN KEY(account_id) REFERENCES account(id) ON UPDATE RESTRICT ON DELETE RESTRICT)"); //$NON-NLS-1$
+        sqliteExecute("CREATE TABLE IF NOT EXISTS ledger (journal_id INTEGER NOT NULL, account_id INTEGER NOT NULL, amount INTEGER NOT NULL, FOREIGN KEY(journal_id) REFERENCES journal(id) ON UPDATE RESTRICT ON DELETE RESTRICT, FOREIGN KEY(account_id) REFERENCES account(id) ON UPDATE RESTRICT ON DELETE RESTRICT)"); //$NON-NLS-1$
     }
 
     private void sqliteExecute(String sql) {

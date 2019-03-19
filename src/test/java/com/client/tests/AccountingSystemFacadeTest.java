@@ -111,7 +111,7 @@ public class AccountingSystemFacadeTest extends AbstractTomcatJndi {
     }
 
     @Test
-    public void postTransaction() {
+    public void postTransactionAndGet() {
         AccountingSystemFacade facade = injector.getInstance(AccountingSystemFacade.class);
         Assert.assertNotNull(facade);
 
@@ -126,5 +126,9 @@ public class AccountingSystemFacadeTest extends AbstractTomcatJndi {
 
         List<Transaction> list = facade.getTransactions();
         Assert.assertNotNull(list);
+        Assert.assertFalse(list.isEmpty());
+        Assert.assertTrue(1 == list.size());
+        Transaction tx = list.get(0);
+        Assert.assertTrue(2 == tx.getLedgerEntries().size());
     }
 }

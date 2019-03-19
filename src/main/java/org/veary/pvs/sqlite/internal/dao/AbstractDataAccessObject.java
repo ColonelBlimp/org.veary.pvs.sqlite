@@ -144,6 +144,11 @@ abstract class AbstractDataAccessObject {
         return list;
     }
 
+    /**
+     * Mark the start of an SQL transaction.
+     * @return A {@code Connection} object
+     * @throws SQLException if there is an issue
+     */
     protected Connection startTransaction() throws SQLException {
         log.trace(Constants.LOG_CALLED);
         Connection conn = this.manager.getConnection();
@@ -151,9 +156,20 @@ abstract class AbstractDataAccessObject {
         return conn;
     }
 
-    protected boolean endTransaction(Connection conn, int rowCount) {
+    /**
+     * Mark the end of an SQL transaction. Commits and resets auto commit.
+     * @param conn The {@code Connection} object
+     * @param expected The expected number of changes.
+     * @param actual The actual number of changes
+     * @return {@code true} if everything went well, otherwise {@code false}
+     */
+    protected boolean endTransaction(Connection conn, int expected, int actual) {
         log.trace(Constants.LOG_CALLED);
         boolean retval = false;
+
+        if (expected != actual) {
+            rollbackTransaction(conn);
+        }
 
         try {
             conn.commit();
@@ -166,6 +182,10 @@ abstract class AbstractDataAccessObject {
         return retval;
     }
 
+    /**
+     * Rolls back any changes.
+     * @param conn The {@code Connection} object
+     */
     protected void rollbackTransaction(Connection conn) {
         log.trace(Constants.LOG_CALLED);
         try {

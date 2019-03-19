@@ -31,6 +31,8 @@ import java.sql.SQLException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -41,17 +43,23 @@ import org.veary.pvs.core.Money;
 import org.veary.pvs.dao.SystemDataAccessObject;
 import org.veary.pvs.exceptions.DataAccessException;
 import org.veary.pvs.model.Account;
+import org.veary.pvs.model.LedgerEntry;
+import org.veary.pvs.model.ModelFactory;
 import org.veary.pvs.model.Transaction;
 import org.veary.pvs.sqlite.ConnectionManager;
 
 final class SystemDataAccessObjectImpl extends AbstractDataAccessObject
 implements SystemDataAccessObject {
 
+    private static final int EXPECTED_TRANSACTION_COUNT = 3;
     private final Logger log = LogManager.getLogger(SystemDataAccessObjectImpl.class);
 
+    private final ModelFactory factory;
+
     @Inject
-    protected SystemDataAccessObjectImpl(ConnectionManager manager) {
+    protected SystemDataAccessObjectImpl(ConnectionManager manager, ModelFactory factory) {
         super(manager);
+        this.factory = factory;
     }
 
     @Override
@@ -75,10 +83,8 @@ implements SystemDataAccessObject {
             if (createLedgerEntry(conn, journalId, toAccount.getId(), amount) > 0) {
                 resultCount++;
             }
-            retval = endTransaction(conn, resultCount);
+            retval = endTransaction(conn, EXPECTED_TRANSACTION_COUNT, resultCount);
         } catch (SQLException e) { throw new DataAccessException(e); }
-
-        log.debug("Journal Id: {}", journalId);
 
         return retval;
     }
@@ -87,18 +93,48 @@ implements SystemDataAccessObject {
     public List<Transaction> getTransactions() {
         log.trace(Constants.LOG_CALLED);
 
-        List<Transaction> list = new ArrayList<>();
+        List<Map<Object, Object>> txResults = executeSqlAndReturnList("SELECT * FROM journal");
+        List<Transaction> list = new ArrayList<>(txResults.size());
+
+        for (Map<Object, Object> row : txResults) {
+            Optional<Transaction> entry = Optional.ofNullable(
+                this.factory.buildTransactionObject(row));
+            if (entry.isPresent()) {
+                Transaction tx = entry.get();
+                tx.setLedgerEntries(getLedgerEntriesForJournalId(tx.getId()));
+                list.add(tx);
+            }
+        }
 
         return list;
+    }
+
+    private List<LedgerEntry> getLedgerEntriesForJournalId(int journalId) {
+        log.trace(Constants.LOG_CALLED);
+
+        List<Map<Object, Object>> results = executeSqlAndReturnList(
+            "SELECT * FROM ledger WHERE journal_id=?", String.valueOf(journalId));
+        if (results.size() < 2) {
+            throw new AssertionError("The jounal_id [" + journalId + "] must have a minimum of 2"
+                + " entries in the ledger, found only [" + results.size() + "]");
+        }
+
+        List<LedgerEntry> entries = new ArrayList<>();
+        for (Map<Object, Object> row : results) {
+            entries.add(this.factory.buildLedgerEntryObject(row));
+        }
+
+        return entries;
     }
 
     private int createLedgerEntry(Connection conn, int journalId, int accountId, Money amount) {
         log.trace(Constants.LOG_CALLED);
         int id = 0;
-        try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO ledger(journal_id,account_id,amount) VALUES(?,?,?)")) {
+        try (PreparedStatement stmt = conn.prepareStatement(
+            "INSERT INTO ledger(journal_id,account_id,amount) VALUES(?,?,?)")) {
             stmt.setObject(1, Integer.valueOf(journalId));
             stmt.setObject(2, Integer.valueOf(accountId));
-            stmt.setObject(3, amount.getAmount());
+            stmt.setObject(3, amount.toUnscaledInteger());
             stmt.executeUpdate();
             try (ResultSet rset = stmt.getGeneratedKeys()) {
                 id = getRowId(resultSetToList(rset));
@@ -110,13 +146,15 @@ implements SystemDataAccessObject {
         return id;
     }
 
-    private int createJournalEntry(Connection conn, ZonedDateTime timestamp, String narrative, String reference, int daybookId) {
+    private int createJournalEntry(Connection conn,
+        ZonedDateTime timestamp, String narrative, String reference, int daybookId) {
         log.trace(Constants.LOG_CALLED);
         int journalId = 0;
 
-        try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO journal(date,ref,narrative,daybook_id) VALUES(?,?,?,?)")) {
-            stmt.setObject(1, reference);
-            stmt.setObject(2, timestamp.toString());
+        try (PreparedStatement stmt = conn.prepareStatement(
+            "INSERT INTO journal(date,ref,narrative,daybook_id) VALUES(?,?,?,?)")) {
+            stmt.setObject(1, timestamp.toString());
+            stmt.setObject(2, reference);
             stmt.setObject(3, narrative);
             stmt.setObject(4, daybookId);
             stmt.executeUpdate();

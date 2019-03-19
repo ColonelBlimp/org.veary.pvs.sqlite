@@ -54,7 +54,7 @@ plugins:
     enabled: true
 exclude_patterns:
 - "config/"
-- "db/"
+- "db-design/"
 - "dist/"
 - "features/"
 - "**/node_modules/"
