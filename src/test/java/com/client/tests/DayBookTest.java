@@ -29,13 +29,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.veary.pvs.api.DayBookFacade;
+import org.veary.pvs.api.GuiceApiModule;
 import org.veary.pvs.api.PeriodFacade;
-import org.veary.pvs.api.internal.GuiceApiImplModule;
 import org.veary.pvs.model.DayBook;
 import org.veary.pvs.model.Period;
-import org.veary.pvs.model.internal.GuiceModelModule;
 import org.veary.pvs.sqlite.DatabaseManager;
-import org.veary.pvs.sqlite.internal.dao.GuiceSqliteDaoModule;
+import org.veary.pvs.sqlite.GuiceSqliteModule;
 
 public class DayBookTest extends AbstractTomcatJndi {
 
@@ -49,9 +48,8 @@ public class DayBookTest extends AbstractTomcatJndi {
     public void setup() {
         tomcatJndiSetup();
         injector = Guice.createInjector(
-            new GuiceApiImplModule(),
-            new GuiceModelModule(),
-            new GuiceSqliteDaoModule()
+            new GuiceApiModule(),
+            new GuiceSqliteModule()
             );
         DatabaseManager manager = injector.getInstance(DatabaseManager.class);
         manager.createTables();

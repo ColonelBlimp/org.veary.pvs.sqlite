@@ -25,6 +25,15 @@
 /**
  * The public API for this SQLite data access implementation.
  *
+ * <p>This package provides everthing needed to use the PVS API with Sqlite. All that needs to be
+ * done is add the appropriate Guice modules when creating the injector, as shown below:
+ * <pre>
+ * injector = Guice.createInjector(
+ *     new GuiceApiModule(),
+ *     new GuiceSqliteModule()
+ *     );
+   </pre>
+ *
  * @author Marc L. Veary
  * @since 1.0
  */

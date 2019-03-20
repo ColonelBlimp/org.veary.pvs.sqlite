@@ -39,16 +39,15 @@ import org.junit.Test;
 import org.veary.pvs.api.AccountFacade;
 import org.veary.pvs.api.AccountingSystemFacade;
 import org.veary.pvs.api.DayBookFacade;
+import org.veary.pvs.api.GuiceApiModule;
 import org.veary.pvs.api.PeriodFacade;
-import org.veary.pvs.api.internal.GuiceApiImplModule;
 import org.veary.pvs.core.Money;
 import org.veary.pvs.model.Account;
 import org.veary.pvs.model.Account.Type;
 import org.veary.pvs.model.DayBook;
 import org.veary.pvs.model.Transaction;
-import org.veary.pvs.model.internal.GuiceModelModule;
 import org.veary.pvs.sqlite.DatabaseManager;
-import org.veary.pvs.sqlite.internal.dao.GuiceSqliteDaoModule;
+import org.veary.pvs.sqlite.GuiceSqliteModule;
 
 public class AccountingSystemFacadeTest extends AbstractTomcatJndi {
 
@@ -67,9 +66,8 @@ public class AccountingSystemFacadeTest extends AbstractTomcatJndi {
     public void setup() {
         tomcatJndiSetup();
         injector = Guice.createInjector(
-            new GuiceApiImplModule(),
-            new GuiceModelModule(),
-            new GuiceSqliteDaoModule()
+            new GuiceApiModule(),
+            new GuiceSqliteModule()
             );
         DatabaseManager manager = injector.getInstance(DatabaseManager.class);
         manager.createTables();
