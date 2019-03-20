@@ -51,7 +51,7 @@ import org.veary.pvs.sqlite.ConnectionManager;
 final class AccountDataAccessObjectImpl extends AbstractDataAccessObject
 implements AccountDataAccessObject {
 
-    private final Logger log = LogManager.getLogger(AccountDataAccessObjectImpl.class);
+    private static final Logger log = LogManager.getLogger(AccountDataAccessObjectImpl.class);
     private final ModelFactory factory;
 
     @Inject

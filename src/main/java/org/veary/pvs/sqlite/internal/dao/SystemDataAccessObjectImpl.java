@@ -58,7 +58,7 @@ final class SystemDataAccessObjectImpl extends AbstractDataAccessObject
 implements SystemDataAccessObject {
 
     private static final int EXPECTED_TRANSACTION_COUNT = 3;
-    private final Logger log = LogManager.getLogger(SystemDataAccessObjectImpl.class);
+    private static final Logger log = LogManager.getLogger(SystemDataAccessObjectImpl.class);
 
     private final ModelFactory factory;
 

@@ -50,7 +50,7 @@ import org.veary.pvs.sqlite.ConnectionManager;
 final class DayBookDataAccessObjectImpl extends AbstractDataAccessObject
 implements DayBookDataAccessObject {
 
-    private final Logger log = LogManager.getLogger(DayBookDataAccessObjectImpl.class);
+    private static final Logger log = LogManager.getLogger(DayBookDataAccessObjectImpl.class);
     private final ModelFactory factory;
 
     @Inject

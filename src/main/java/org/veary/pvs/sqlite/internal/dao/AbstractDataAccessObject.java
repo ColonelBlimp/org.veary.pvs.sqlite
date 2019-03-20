@@ -50,7 +50,7 @@ import org.veary.pvs.sqlite.ConnectionManager;
  */
 abstract class AbstractDataAccessObject {
 
-    private final Logger log = LogManager.getLogger(AbstractDataAccessObject.class);
+    private static final Logger log = LogManager.getLogger(AbstractDataAccessObject.class);
     private final ConnectionManager manager;
 
     /**
