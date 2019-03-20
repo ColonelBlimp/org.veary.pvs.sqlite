@@ -30,7 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.veary.pvs.api.DayBookFacade;
 import org.veary.pvs.api.PeriodFacade;
-import org.veary.pvs.api.internal.GuiceApiModule;
+import org.veary.pvs.api.internal.GuiceApiImplModule;
 import org.veary.pvs.model.DayBook;
 import org.veary.pvs.model.Period;
 import org.veary.pvs.model.internal.GuiceModelModule;
@@ -49,7 +49,7 @@ public class DayBookTest extends AbstractTomcatJndi {
     public void setup() {
         tomcatJndiSetup();
         injector = Guice.createInjector(
-            new GuiceApiModule(),
+            new GuiceApiImplModule(),
             new GuiceModelModule(),
             new GuiceSqliteDaoModule()
             );

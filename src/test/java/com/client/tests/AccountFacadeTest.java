@@ -29,7 +29,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.veary.pvs.api.AccountFacade;
-import org.veary.pvs.api.internal.GuiceApiModule;
+import org.veary.pvs.api.internal.GuiceApiImplModule;
 import org.veary.pvs.model.Account;
 import org.veary.pvs.model.Account.Type;
 import org.veary.pvs.model.internal.GuiceModelModule;
@@ -49,7 +49,7 @@ public class AccountFacadeTest extends AbstractTomcatJndi {
     public void setup() {
         tomcatJndiSetup();
         injector = Guice.createInjector(
-            new GuiceApiModule(),
+            new GuiceApiImplModule(),
             new GuiceModelModule(),
             new GuiceSqliteDaoModule()
             );
