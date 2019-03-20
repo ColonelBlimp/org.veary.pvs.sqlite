@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,6 +40,13 @@ import org.veary.pvs.model.DayBook;
 import org.veary.pvs.model.ModelFactory;
 import org.veary.pvs.sqlite.ConnectionManager;
 
+/**
+ * Package scoped, concrete implementation of the {@code DayBookDataAccessObject} for SQLite.
+ *
+ * @author Marc L. Veary
+ * @since 1.0
+ */
+@Singleton
 final class DayBookDataAccessObjectImpl extends AbstractDataAccessObject
 implements DayBookDataAccessObject {
 

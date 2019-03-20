@@ -41,12 +41,17 @@ import org.veary.pvs.model.Account.Type;
 import org.veary.pvs.model.ModelFactory;
 import org.veary.pvs.sqlite.ConnectionManager;
 
+/**
+ * Package scoped, concrete implementation of the {@code AccountDataAccessObject} for SQLite.
+ *
+ * @author Marc L. Veary
+ * @since 1.0
+ */
 @Singleton
 final class AccountDataAccessObjectImpl extends AbstractDataAccessObject
 implements AccountDataAccessObject {
 
     private final Logger log = LogManager.getLogger(AccountDataAccessObjectImpl.class);
-
     private final ModelFactory factory;
 
     @Inject

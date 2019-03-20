@@ -131,4 +131,42 @@ public class AccountingSystemFacadeTest extends AbstractTomcatJndi {
         Transaction tx = list.get(0);
         Assert.assertTrue(2 == tx.getLedgerEntries().size());
     }
+
+    @Test
+    public void getTransactionForDayBook() {
+        AccountingSystemFacade facade = injector.getInstance(AccountingSystemFacade.class);
+        Assert.assertNotNull(facade);
+
+        Assert.assertTrue(facade.postTransaction(
+            ZonedDateTime.now(),
+            "Fuel for Land Rover",
+            new Money(BigDecimal.valueOf(1000000, 2)),
+            this.fromAccount,
+            this.toAccount,
+            "PV20190331001",
+            this.dayBook.getId()));
+
+        Assert.assertTrue(facade.postTransaction(
+            ZonedDateTime.now(),
+            "Fuel for Hilux",
+            new Money(BigDecimal.valueOf(500000, 2)),
+            this.fromAccount,
+            this.toAccount,
+            "PV20190331002",
+            this.dayBook.getId()));
+
+        Assert.assertTrue(facade.postTransaction(
+            ZonedDateTime.now(),
+            "Fuel for Hino",
+            new Money(BigDecimal.valueOf(2500000, 2)),
+            this.fromAccount,
+            this.toAccount,
+            "PV20190331003",
+            this.dayBook.getId()));
+
+        List<Transaction> list = facade.getTransactionsForDayBook(this.dayBook.getId());
+        Assert.assertNotNull(list);
+        Assert.assertFalse(list.isEmpty());
+        Assert.assertTrue(3 == list.size());
+    }
 }

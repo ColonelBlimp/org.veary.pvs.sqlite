@@ -89,6 +89,14 @@ public class DayBookTest extends AbstractTomcatJndi {
         Assert.assertEquals(DAYBOOK_NAME, book.getName());
         Assert.assertTrue(id == book.getId());
         Assert.assertTrue(this.period.getId() == book.getPeriodId());
+
+        result = facade.getDayBookById(id);
+        Assert.assertNotNull(result);
+        Assert.assertTrue(result.isPresent());
+        book = result.get();
+        Assert.assertNotNull(book);
+        Assert.assertEquals(DAYBOOK_NAME, book.getName());
+        Assert.assertTrue(id == book.getId());
     }
 
     @Test

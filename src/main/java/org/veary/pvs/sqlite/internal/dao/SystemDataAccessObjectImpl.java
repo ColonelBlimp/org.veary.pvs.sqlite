@@ -48,6 +48,12 @@ import org.veary.pvs.model.ModelFactory;
 import org.veary.pvs.model.Transaction;
 import org.veary.pvs.sqlite.ConnectionManager;
 
+/**
+ * Package scoped, concrete implementation of the {@code SystemDataAccessObject} for SQLite.
+ *
+ * @author Marc L. Veary
+ * @since 1.0
+ */
 final class SystemDataAccessObjectImpl extends AbstractDataAccessObject
 implements SystemDataAccessObject {
 
@@ -92,8 +98,18 @@ implements SystemDataAccessObject {
     @Override
     public List<Transaction> getTransactions() {
         log.trace(Constants.LOG_CALLED);
+        return getTransactions("SELECT * FROM journal");
+    }
 
-        List<Map<Object, Object>> txResults = executeSqlAndReturnList("SELECT * FROM journal");
+    @Override
+    public List<Transaction> getTransactionsForDayBook(int daybookId) {
+        log.trace(Constants.LOG_CALLED);
+        return getTransactions("SELECT * FROM journal WHERE daybook_id=?",
+            String.valueOf(daybookId));
+    }
+
+    private List<Transaction> getTransactions(String sql, String... args) {
+        List<Map<Object, Object>> txResults = executeSqlAndReturnList(sql, args);
         List<Transaction> list = new ArrayList<>(txResults.size());
 
         for (Map<Object, Object> row : txResults) {
