@@ -23,7 +23,7 @@
  */
 
 /**
- * SQLite specific implementations of the data access objects.
+ * Internal implementations which are package scoped except one class for Guice.
  *
  * @author Marc L. Veary
  * @since 1.0

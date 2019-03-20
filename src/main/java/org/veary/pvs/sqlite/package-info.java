@@ -23,6 +23,8 @@
  */
 
 /**
+ * The public API for this SQLite data access implementation.
+ *
  * @author Marc L. Veary
  * @since 1.0
  */

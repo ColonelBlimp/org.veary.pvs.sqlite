@@ -23,6 +23,9 @@
  */
 
 /**
+ * Internal implementations of the PVS API data access interfaces.  All classes are package scoped
+ * except one class for Guice.
+ *
  * @author Marc L. Veary
  * @since 1.0
  */
