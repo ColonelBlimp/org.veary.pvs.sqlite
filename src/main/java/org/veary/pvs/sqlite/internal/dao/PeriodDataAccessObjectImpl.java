@@ -132,6 +132,9 @@ implements PeriodDataAccessObject {
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(sql, args);
+        if (results.isEmpty()) {
+            return Optional.ofNullable(null);
+        }
 
         return Optional.ofNullable(this.factory.buildPeriodObject(results.get(0)));
     }

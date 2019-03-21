@@ -131,6 +131,9 @@ implements DayBookDataAccessObject {
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(sql, args);
+        if (results.isEmpty()) {
+            return Optional.ofNullable(null);
+        }
 
         return Optional.ofNullable(this.factory.buildDayBookObject(results.get(0)));
     }
