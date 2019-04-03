@@ -167,4 +167,60 @@ public class AccountingSystemFacadeTest extends AbstractTomcatJndi {
         Assert.assertFalse(list.isEmpty());
         Assert.assertTrue(3 == list.size());
     }
+
+    @Test
+    public void getTransactionsForAccountInDayBook() {
+        AccountingSystemFacade facade = injector.getInstance(AccountingSystemFacade.class);
+        Assert.assertNotNull(facade);
+
+        Assert.assertTrue(facade.postTransaction(
+            ZonedDateTime.now(),
+            "Fuel for Land Rover",
+            new Money(BigDecimal.valueOf(1000000, 2)),
+            this.fromAccount,
+            this.toAccount,
+            "PV20190331001",
+            this.dayBook.getId()));
+
+        Assert.assertTrue(facade.postTransaction(
+            ZonedDateTime.now(),
+            "Fuel for Hilux",
+            new Money(BigDecimal.valueOf(500000, 2)),
+            this.fromAccount,
+            this.toAccount,
+            "PV20190331002",
+            this.dayBook.getId()));
+
+        Assert.assertTrue(facade.postTransaction(
+            ZonedDateTime.now(),
+            "Fuel for Hino",
+            new Money(BigDecimal.valueOf(2500000, 2)),
+            this.fromAccount,
+            this.toAccount,
+            "PV20190331003",
+            this.dayBook.getId()));
+
+        Assert.assertTrue(facade.postTransaction(
+            ZonedDateTime.now(),
+            "Fuel for Pickup",
+            new Money(BigDecimal.valueOf(2500000, 2)),
+            this.fromAccount,
+            this.toAccount,
+            "PV20190331004",
+            this.dayBook.getId()));
+
+        Assert.assertTrue(facade.postTransaction(
+            ZonedDateTime.now(),
+            "Fuel for Hino",
+            new Money(BigDecimal.valueOf(3000000, 2)),
+            this.fromAccount,
+            this.toAccount,
+            "PV20190331005",
+            this.dayBook.getId()));
+
+        List<Transaction> list = facade.getTransactionsForAccountInDayBook(this.fromAccount, this.dayBook);
+        Assert.assertNotNull(list);
+        Assert.assertFalse(list.isEmpty());
+        Assert.assertTrue(5 == list.size());
+    }
 }

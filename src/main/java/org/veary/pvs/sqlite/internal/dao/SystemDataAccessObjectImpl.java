@@ -43,6 +43,7 @@ import org.veary.pvs.core.Money;
 import org.veary.pvs.dao.SystemDataAccessObject;
 import org.veary.pvs.exceptions.DataAccessException;
 import org.veary.pvs.model.Account;
+import org.veary.pvs.model.DayBook;
 import org.veary.pvs.model.LedgerEntry;
 import org.veary.pvs.model.ModelFactory;
 import org.veary.pvs.model.Transaction;
@@ -108,7 +109,47 @@ implements SystemDataAccessObject {
             String.valueOf(daybookId));
     }
 
+    @Override
+    public List<Transaction> getTransactionForAccountInDayBook(Account account, DayBook dayBook) {
+        log.trace(Constants.LOG_CALLED);
+        return getTransactions("SELECT * FROM journal WHERE daybook_id=?",
+            account, String.valueOf(dayBook.getId()));
+    }
+
+    /**
+     * Returns a List of {@code Transaction} object for a particular {@code Account} and within
+     * a particular {@code DayBook}.
+     * @param sql The SQL to use to lookup all the transaction for a particular
+     * @param account The account object for which to narrow the results.
+     * @param args Args require by the SQL.
+     * @return a List
+     */
+    private List<Transaction> getTransactions(String sql, Account account, String... args) {
+        log.trace(Constants.LOG_CALLED);
+        List<Map<Object, Object>> txResults = executeSqlAndReturnList(sql, args);
+        List<Transaction> list = new ArrayList<>(txResults.size());
+
+        for (Map<Object, Object> row : txResults) {
+            Optional<Transaction> entry = Optional.ofNullable(
+                this.factory.buildTransactionObject(row));
+            if (entry.isPresent()) {
+                Transaction tx = entry.get();
+                List<LedgerEntry> ledgerEntries = getLedgerEntriesForJournalId(tx.getId());
+                for (LedgerEntry le : ledgerEntries) {
+                    if (le.getAccountId() == account.getId()) {
+                        tx.setLedgerEntries(getLedgerEntriesForJournalId(tx.getId()));
+                        list.add(tx);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return list;
+    }
+
     private List<Transaction> getTransactions(String sql, String... args) {
+        log.trace(Constants.LOG_CALLED);
         List<Map<Object, Object>> txResults = executeSqlAndReturnList(sql, args);
         List<Transaction> list = new ArrayList<>(txResults.size());
 
