@@ -41,6 +41,7 @@ public class AccountFacadeTest extends AbstractTomcatJndi {
     private static final String EXPENSE_NAME = "Fuel";
     private static final String LIABILITY_NAME = "Loan";
     private static final String INCOME_NAME = "Salary";
+    private static final String OPENING_BALANCE = "Opening Balances";
 
     private Injector injector;
 
@@ -127,6 +128,23 @@ public class AccountFacadeTest extends AbstractTomcatJndi {
         Assert.assertNotNull(account);
         Assert.assertEquals(INCOME_NAME, account.getName());
         Assert.assertEquals(Type.INCOME, account.getType());
+        Assert.assertTrue(id == account.getId());
+    }
+
+    @Test
+    public void createRelatedEarningAccount() {
+        AccountFacade facade = injector.getInstance(AccountFacade.class);
+        Assert.assertNotNull(facade);
+        int id = facade.createAccount(OPENING_BALANCE, Account.Type.RETAINED_EARNINGS);
+        Assert.assertTrue(id > 0);
+
+        Optional<Account> result = facade.getAccountById(id);
+        Assert.assertNotNull(result);
+        Assert.assertTrue(result.isPresent());
+        Account account = result.get();
+        Assert.assertNotNull(account);
+        Assert.assertEquals(OPENING_BALANCE, account.getName());
+        Assert.assertEquals(Type.RETAINED_EARNINGS, account.getType());
         Assert.assertTrue(id == account.getId());
     }
 
