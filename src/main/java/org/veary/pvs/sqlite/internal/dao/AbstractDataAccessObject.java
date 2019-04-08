@@ -39,7 +39,6 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.veary.pvs.core.Constants;
-import org.veary.pvs.exceptions.DataAccessException;
 import org.veary.pvs.sqlite.ConnectionManager;
 
 /**
@@ -69,35 +68,34 @@ abstract class AbstractDataAccessObject {
      * @param args a varargs list of Strings
      * @return {@code List<Map<Object, Object>>}. Cannot be {@code null}.
      */
-    protected List<Map<Object, Object>> executeSqlAndReturnList(String sql, String... args) {
+    protected List<Map<Object, Object>> executeSqlAndReturnList(String sql, String... args)
+        throws SQLException {
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> result = new ArrayList<>(0);
 
-        try {
-            try (Connection conn = this.manager.getConnection()) {
-                try (PreparedStatement stmt = conn.prepareStatement(sql,
-                    PreparedStatement.RETURN_GENERATED_KEYS)) {
-                    int index = 1;
+        try (Connection conn = this.manager.getConnection()) {
+            try (PreparedStatement stmt = conn.prepareStatement(sql,
+                PreparedStatement.RETURN_GENERATED_KEYS)) {
+                int index = 1;
 
-                    for (Object arg : args) {
-                        stmt.setObject(index++, arg);
+                for (Object arg : args) {
+                    stmt.setObject(index++, arg);
+                }
+
+                if (sql.startsWith("SELECT")) {
+                    try (ResultSet rset = stmt.executeQuery()) {
+                        result = resultSetToList(rset);
                     }
-
-                    if (sql.startsWith("SELECT")) {
-                        try (ResultSet rset = stmt.executeQuery()) {
-                            result = resultSetToList(rset);
-                        }
-                    } else {
-                        // INSERT, UPDATE and DELETE
-                        stmt.executeUpdate();
-                        try (ResultSet rset = stmt.getGeneratedKeys()) {
-                            result = resultSetToList(rset);
-                        }
+                } else {
+                    // INSERT, UPDATE and DELETE
+                    stmt.executeUpdate();
+                    try (ResultSet rset = stmt.getGeneratedKeys()) {
+                        result = resultSetToList(rset);
                     }
                 }
             }
-        } catch (SQLException e) { throw new DataAccessException(e); }
+        }
 
         return result;
     }

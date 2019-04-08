@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.veary.pvs.api.AccountFacade;
 import org.veary.pvs.api.GuiceApiModule;
+import org.veary.pvs.exceptions.ApiException;
 import org.veary.pvs.model.Account;
 import org.veary.pvs.model.Account.Type;
 import org.veary.pvs.sqlite.DatabaseManager;
@@ -64,7 +65,7 @@ public class AccountFacadeTest extends AbstractTomcatJndi {
     }
 
     @Test
-    public void createAssetAccount() {
+    public void createAssetAccount() throws ApiException {
         AccountFacade facade = injector.getInstance(AccountFacade.class);
         Assert.assertNotNull(facade);
         int id = facade.createAssetAccount(CASH_NAME);
@@ -81,7 +82,7 @@ public class AccountFacadeTest extends AbstractTomcatJndi {
     }
 
     @Test
-    public void createExpenseAccount() {
+    public void createExpenseAccount() throws ApiException {
         AccountFacade facade = injector.getInstance(AccountFacade.class);
         Assert.assertNotNull(facade);
         int id = facade.createExpenseAccount(EXPENSE_NAME);
@@ -98,7 +99,7 @@ public class AccountFacadeTest extends AbstractTomcatJndi {
     }
 
     @Test
-    public void createLiabilityAccount() {
+    public void createLiabilityAccount() throws ApiException {
         AccountFacade facade = injector.getInstance(AccountFacade.class);
         Assert.assertNotNull(facade);
         int id = facade.createLiabilityAccount(LIABILITY_NAME);
@@ -115,7 +116,7 @@ public class AccountFacadeTest extends AbstractTomcatJndi {
     }
 
     @Test
-    public void createIncomeAccount() {
+    public void createIncomeAccount() throws ApiException {
         AccountFacade facade = injector.getInstance(AccountFacade.class);
         Assert.assertNotNull(facade);
         int id = facade.createIncomeAccount(INCOME_NAME);
@@ -132,7 +133,7 @@ public class AccountFacadeTest extends AbstractTomcatJndi {
     }
 
     @Test
-    public void createRelatedEarningAccount() {
+    public void createRelatedEarningAccount() throws ApiException {
         AccountFacade facade = injector.getInstance(AccountFacade.class);
         Assert.assertNotNull(facade);
         int id = facade.createAccount(OPENING_BALANCE, Account.Type.RETAINED_EARNINGS);
@@ -149,7 +150,7 @@ public class AccountFacadeTest extends AbstractTomcatJndi {
     }
 
     @Test
-    public void getAllAccounts() {
+    public void getAllAccounts() throws ApiException {
         AccountFacade facade = injector.getInstance(AccountFacade.class);
         Assert.assertNotNull(facade);
         facade.createAssetAccount(CASH_NAME);
@@ -172,7 +173,7 @@ public class AccountFacadeTest extends AbstractTomcatJndi {
     }
 
     @Test
-    public void updateAccounts() {
+    public void updateAccounts() throws ApiException {
         AccountFacade facade = injector.getInstance(AccountFacade.class);
         Assert.assertNotNull(facade);
         facade.createAssetAccount(CASH_NAME);
@@ -197,6 +198,33 @@ public class AccountFacadeTest extends AbstractTomcatJndi {
 
         for (Account account : list) {
             Assert.assertTrue(account.getName().endsWith("1"));
+        }
+    }
+
+    @Test
+    public void uniqueConstraintNameCreate() {
+        AccountFacade facade = injector.getInstance(AccountFacade.class);
+        Assert.assertNotNull(facade);
+        try {
+            facade.createAssetAccount(CASH_NAME);
+            facade.createAssetAccount(CASH_NAME);
+        } catch (ApiException e) {
+            Assert.assertTrue(e.getMessage().contains(
+                "Abort due to constraint violation (UNIQUE constraint failed: account.name)"));
+        }
+    }
+
+    @Test
+    public void uniqueConstraintNameUpdate() {
+        AccountFacade facade = injector.getInstance(AccountFacade.class);
+        Assert.assertNotNull(facade);
+        try {
+            facade.createAssetAccount(CASH_NAME);
+            facade.createExpenseAccount(EXPENSE_NAME);
+            facade.updateAccount(CASH_NAME, EXPENSE_NAME);
+        } catch (ApiException e) {
+            Assert.assertTrue(e.getMessage().contains(
+                "Abort due to constraint violation (UNIQUE constraint failed: account.name)"));
         }
     }
 }

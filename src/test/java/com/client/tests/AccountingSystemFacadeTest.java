@@ -42,6 +42,7 @@ import org.veary.pvs.api.DayBookFacade;
 import org.veary.pvs.api.GuiceApiModule;
 import org.veary.pvs.api.PeriodFacade;
 import org.veary.pvs.core.Money;
+import org.veary.pvs.exceptions.ApiException;
 import org.veary.pvs.model.Account;
 import org.veary.pvs.model.Account.Type;
 import org.veary.pvs.model.DayBook;
@@ -63,7 +64,7 @@ public class AccountingSystemFacadeTest extends AbstractTomcatJndi {
     private Account toAccount;
 
     @Before
-    public void setup() {
+    public void setup() throws ApiException {
         tomcatJndiSetup();
         injector = Guice.createInjector(
             new GuiceApiModule(),

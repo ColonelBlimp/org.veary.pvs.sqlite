@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.veary.pvs.api.GuiceApiModule;
 import org.veary.pvs.api.PeriodFacade;
+import org.veary.pvs.exceptions.ApiException;
 import org.veary.pvs.model.Period;
 import org.veary.pvs.sqlite.DatabaseManager;
 import org.veary.pvs.sqlite.GuiceSqliteModule;
@@ -59,7 +60,7 @@ public class PeriodFacadeTest extends AbstractTomcatJndi {
     }
 
     @Test
-    public void createPeriod() {
+    public void createPeriod() throws ApiException {
         PeriodFacade facade = injector.getInstance(PeriodFacade.class);
         Assert.assertNotNull(facade);
         int id = facade.createPeriod(PERIOD_NAME);
@@ -75,7 +76,7 @@ public class PeriodFacadeTest extends AbstractTomcatJndi {
     }
 
     @Test
-    public void getAllPeriods() {
+    public void getAllPeriods() throws ApiException {
         PeriodFacade facade = injector.getInstance(PeriodFacade.class);
         Assert.assertNotNull(facade);
         facade.createPeriod(PERIOD_NAME);
@@ -98,7 +99,7 @@ public class PeriodFacadeTest extends AbstractTomcatJndi {
     }
 
     @Test
-    public void updatePeriods() {
+    public void updatePeriods() throws ApiException {
         PeriodFacade facade = injector.getInstance(PeriodFacade.class);
         Assert.assertNotNull(facade);
         facade.createPeriod(PERIOD_NAME + "1");
@@ -123,6 +124,33 @@ public class PeriodFacadeTest extends AbstractTomcatJndi {
 
         for (Period period : list) {
             Assert.assertTrue(period.getName().endsWith("X"));
+        }
+    }
+
+    @Test
+    public void uniqueConstraintNameCreate() {
+        PeriodFacade facade = injector.getInstance(PeriodFacade.class);
+        Assert.assertNotNull(facade);
+        try {
+            facade.createPeriod(PERIOD_NAME);
+            facade.createPeriod(PERIOD_NAME);
+        } catch (ApiException e) {
+            Assert.assertTrue(e.getMessage().contains(
+                "Abort due to constraint violation (UNIQUE constraint failed: period.name)"));
+        }
+    }
+
+    @Test
+    public void uniqueConstraintNameUpdate() {
+        PeriodFacade facade = injector.getInstance(PeriodFacade.class);
+        Assert.assertNotNull(facade);
+        try {
+            facade.createPeriod(PERIOD_NAME);
+            facade.createPeriod(PERIOD_NAME + "2");
+            facade.updatePeriod(PERIOD_NAME, PERIOD_NAME + "2");
+        } catch (ApiException e) {
+            Assert.assertTrue(e.getMessage().contains(
+                "Abort due to constraint violation (UNIQUE constraint failed: period.name)"));
         }
     }
 }

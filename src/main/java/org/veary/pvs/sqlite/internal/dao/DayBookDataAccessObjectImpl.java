@@ -24,6 +24,7 @@
 
 package org.veary.pvs.sqlite.internal.dao;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,8 +35,12 @@ import javax.inject.Singleton;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.sqlite.SQLiteErrorCode;
+import org.sqlite.SQLiteException;
 import org.veary.pvs.core.Constants;
 import org.veary.pvs.dao.DayBookDataAccessObject;
+import org.veary.pvs.exceptions.ApiException;
+import org.veary.pvs.exceptions.DataAccessException;
 import org.veary.pvs.model.DayBook;
 import org.veary.pvs.model.ModelFactory;
 import org.veary.pvs.sqlite.ConnectionManager;
@@ -75,66 +80,94 @@ implements DayBookDataAccessObject {
     public List<DayBook> getDayBooks() {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList("SELECT * from daybook");
+        try {
+            List<Map<Object, Object>> results = executeSqlAndReturnList("SELECT * from daybook");
 
-        List<DayBook> list = new ArrayList<>(results.size());
-        for (Map<Object, Object> row : results) {
-            Optional<DayBook> object = Optional.ofNullable(this.factory.buildDayBookObject(row));
-            if (object.isPresent()) {
-                list.add(object.get());
+            List<DayBook> list = new ArrayList<>(results.size());
+            for (Map<Object, Object> row : results) {
+                Optional<DayBook> object = Optional.ofNullable(this.factory.buildDayBookObject(row));
+                if (object.isPresent()) {
+                    list.add(object.get());
+                }
             }
-        }
 
-        return list;
+            return list;
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
+        }
     }
 
     @Override
-    public int createDayBook(String uniqueName, int periodId) {
+    public int createDayBook(String uniqueName, int periodId) throws ApiException {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "INSERT INTO daybook(name,period_id) VALUES(?,?)", uniqueName,
-            String.valueOf(periodId));
+        try {
+            List<Map<Object, Object>> results = executeSqlAndReturnList(
+                "INSERT INTO daybook(name,period_id) VALUES(?,?)", uniqueName,
+                String.valueOf(periodId));
 
-        return getRowId(results);
+            return getRowId(results);
+        } catch (SQLException e) {
+            SQLiteException ex = (SQLiteException) e;
+            if (ex.getResultCode() == SQLiteErrorCode.SQLITE_CONSTRAINT) {
+                throw new ApiException(e);
+            }
+            throw new DataAccessException(e);
+        }
     }
 
     @Override
-    public boolean updateDayBook(String uniqueName, String newUniqueName) {
+    public boolean updateDayBook(String uniqueName, String newUniqueName) throws ApiException {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "UPDATE daybook SET name=? WHERE name=?", newUniqueName, uniqueName);
+        try {
+            List<Map<Object, Object>> results = executeSqlAndReturnList(
+                "UPDATE daybook SET name=? WHERE name=?", newUniqueName, uniqueName);
 
-        boolean retval = false;
-        if (getRowId(results) > 0) {
-            retval = true;
+            boolean retval = false;
+            if (getRowId(results) > 0) {
+                retval = true;
+            }
+            return retval;
+        } catch (SQLException e) {
+            SQLiteException ex = (SQLiteException) e;
+            if (ex.getResultCode() == SQLiteErrorCode.SQLITE_CONSTRAINT) {
+                throw new ApiException(e);
+            }
+            throw new DataAccessException(e);
         }
-        return retval;
     }
 
     @Override
     public boolean deleteDayBook(int id) {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "DELETE FROM daybook WHERE id=?", String.valueOf(id));
+        try {
+            List<Map<Object, Object>> results = executeSqlAndReturnList(
+                "DELETE FROM daybook WHERE id=?", String.valueOf(id));
 
-        boolean retval = false;
-        if (getRowId(results) > 0) {
-            retval = true;
+            boolean retval = false;
+            if (getRowId(results) > 0) {
+                retval = true;
+            }
+            return retval;
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
         }
-        return retval;
     }
 
     private Optional<DayBook> processSingleResult(String sql, String... args) {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(sql, args);
-        if (results.isEmpty()) {
-            return Optional.ofNullable(null);
-        }
+        try {
+            List<Map<Object, Object>> results = executeSqlAndReturnList(sql, args);
+            if (results.isEmpty()) {
+                return Optional.ofNullable(null);
+            }
 
-        return Optional.ofNullable(this.factory.buildDayBookObject(results.get(0)));
+            return Optional.ofNullable(this.factory.buildDayBookObject(results.get(0)));
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
+        }
     }
 }

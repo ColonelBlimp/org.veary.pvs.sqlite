@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.veary.pvs.api.DayBookFacade;
 import org.veary.pvs.api.GuiceApiModule;
 import org.veary.pvs.api.PeriodFacade;
+import org.veary.pvs.exceptions.ApiException;
 import org.veary.pvs.model.DayBook;
 import org.veary.pvs.model.Period;
 import org.veary.pvs.sqlite.DatabaseManager;
@@ -45,7 +46,7 @@ public class DayBookTest extends AbstractTomcatJndi {
     private Period period;
 
     @Before
-    public void setup() {
+    public void setup() throws ApiException {
         tomcatJndiSetup();
         injector = Guice.createInjector(
             new GuiceApiModule(),
@@ -73,7 +74,7 @@ public class DayBookTest extends AbstractTomcatJndi {
     }
 
     @Test
-    public void createDayBook() {
+    public void createDayBook() throws ApiException {
         DayBookFacade facade = injector.getInstance(DayBookFacade.class);
         Assert.assertNotNull(facade);
         int id = facade.createDayBook(DAYBOOK_NAME, this.period.getId());
@@ -98,7 +99,7 @@ public class DayBookTest extends AbstractTomcatJndi {
     }
 
     @Test
-    public void getAllDayBooks() {
+    public void getAllDayBooks() throws ApiException {
         DayBookFacade facade = injector.getInstance(DayBookFacade.class);
         Assert.assertNotNull(facade);
         facade.createDayBook(DAYBOOK_NAME, this.period.getId());
@@ -121,7 +122,7 @@ public class DayBookTest extends AbstractTomcatJndi {
     }
 
     @Test
-    public void updateDayBooks() {
+    public void updateDayBooks() throws ApiException {
         DayBookFacade facade = injector.getInstance(DayBookFacade.class);
         Assert.assertNotNull(facade);
         facade.createDayBook(DAYBOOK_NAME, this.period.getId());
@@ -146,6 +147,33 @@ public class DayBookTest extends AbstractTomcatJndi {
 
         for (DayBook book : list) {
             Assert.assertTrue(book.getName().endsWith("X"));
+        }
+    }
+
+    @Test
+    public void uniqueConstraintNameCreate() {
+        DayBookFacade facade = injector.getInstance(DayBookFacade.class);
+        Assert.assertNotNull(facade);
+        try {
+            facade.createDayBook(DAYBOOK_NAME, this.period.getId());
+            facade.createDayBook(DAYBOOK_NAME, this.period.getId());
+        } catch (ApiException e) {
+            Assert.assertTrue(e.getMessage().contains(
+                "Abort due to constraint violation (UNIQUE constraint failed: daybook.name)"));
+        }
+    }
+
+    @Test
+    public void uniqueConstraintNameUpdate() {
+        DayBookFacade facade = injector.getInstance(DayBookFacade.class);
+        Assert.assertNotNull(facade);
+        try {
+            facade.createDayBook(DAYBOOK_NAME, this.period.getId());
+            facade.createDayBook(DAYBOOK_NAME + "2", this.period.getId());
+            facade.updateDayBook(DAYBOOK_NAME, DAYBOOK_NAME + "2");
+        } catch (ApiException e) {
+            Assert.assertTrue(e.getMessage().contains(
+                "Abort due to constraint violation (UNIQUE constraint failed: daybook.name)"));
         }
     }
 }

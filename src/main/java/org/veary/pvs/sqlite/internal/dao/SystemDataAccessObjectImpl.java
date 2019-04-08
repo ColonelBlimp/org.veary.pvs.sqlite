@@ -126,47 +126,57 @@ implements SystemDataAccessObject {
      */
     private List<Transaction> getTransactions(String sql, Account account, String... args) {
         log.trace(Constants.LOG_CALLED);
-        List<Map<Object, Object>> txResults = executeSqlAndReturnList(sql, args);
-        List<Transaction> list = new ArrayList<>(txResults.size());
 
-        for (Map<Object, Object> row : txResults) {
-            Optional<Transaction> entry = Optional.ofNullable(
-                this.factory.buildTransactionObject(row));
-            if (entry.isPresent()) {
-                Transaction tx = entry.get();
-                List<LedgerEntry> ledgerEntries = getLedgerEntriesForJournalId(tx.getId());
-                for (LedgerEntry le : ledgerEntries) {
-                    if (le.getAccountId() == account.getId()) {
-                        tx.setLedgerEntries(getLedgerEntriesForJournalId(tx.getId()));
-                        list.add(tx);
-                        break;
+        try {
+            List<Map<Object, Object>> txResults = executeSqlAndReturnList(sql, args);
+            List<Transaction> list = new ArrayList<>(txResults.size());
+
+            for (Map<Object, Object> row : txResults) {
+                Optional<Transaction> entry = Optional.ofNullable(
+                    this.factory.buildTransactionObject(row));
+                if (entry.isPresent()) {
+                    Transaction tx = entry.get();
+                    List<LedgerEntry> ledgerEntries = getLedgerEntriesForJournalId(tx.getId());
+                    for (LedgerEntry le : ledgerEntries) {
+                        if (le.getAccountId() == account.getId()) {
+                            tx.setLedgerEntries(getLedgerEntriesForJournalId(tx.getId()));
+                            list.add(tx);
+                            break;
+                        }
                     }
                 }
             }
-        }
 
-        return list;
+            return list;
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
+        }
     }
 
     private List<Transaction> getTransactions(String sql, String... args) {
         log.trace(Constants.LOG_CALLED);
-        List<Map<Object, Object>> txResults = executeSqlAndReturnList(sql, args);
-        List<Transaction> list = new ArrayList<>(txResults.size());
 
-        for (Map<Object, Object> row : txResults) {
-            Optional<Transaction> entry = Optional.ofNullable(
-                this.factory.buildTransactionObject(row));
-            if (entry.isPresent()) {
-                Transaction tx = entry.get();
-                tx.setLedgerEntries(getLedgerEntriesForJournalId(tx.getId()));
-                list.add(tx);
+        try {
+            List<Map<Object, Object>> txResults = executeSqlAndReturnList(sql, args);
+            List<Transaction> list = new ArrayList<>(txResults.size());
+
+            for (Map<Object, Object> row : txResults) {
+                Optional<Transaction> entry = Optional.ofNullable(
+                    this.factory.buildTransactionObject(row));
+                if (entry.isPresent()) {
+                    Transaction tx = entry.get();
+                    tx.setLedgerEntries(getLedgerEntriesForJournalId(tx.getId()));
+                    list.add(tx);
+                }
             }
-        }
 
-        return list;
+            return list;
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
+        }
     }
 
-    private List<LedgerEntry> getLedgerEntriesForJournalId(int journalId) {
+    private List<LedgerEntry> getLedgerEntriesForJournalId(int journalId) throws SQLException {
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(

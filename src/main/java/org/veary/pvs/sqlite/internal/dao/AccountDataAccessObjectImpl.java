@@ -24,6 +24,7 @@
 
 package org.veary.pvs.sqlite.internal.dao;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,8 +35,12 @@ import javax.inject.Singleton;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.sqlite.SQLiteErrorCode;
+import org.sqlite.SQLiteException;
 import org.veary.pvs.core.Constants;
 import org.veary.pvs.dao.AccountDataAccessObject;
+import org.veary.pvs.exceptions.ApiException;
+import org.veary.pvs.exceptions.DataAccessException;
 import org.veary.pvs.model.Account;
 import org.veary.pvs.model.Account.Type;
 import org.veary.pvs.model.ModelFactory;
@@ -76,66 +81,94 @@ implements AccountDataAccessObject {
     public List<Account> getAccounts() {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList("SELECT * from account");
+        try {
+            List<Map<Object, Object>> results = executeSqlAndReturnList("SELECT * from account");
 
-        List<Account> list = new ArrayList<>(results.size());
-        for (Map<Object, Object> row : results) {
-            Optional<Account> account = Optional.ofNullable(this.factory.buildAccountObject(row));
-            if (account.isPresent()) {
-                list.add(account.get());
+            List<Account> list = new ArrayList<>(results.size());
+            for (Map<Object, Object> row : results) {
+                Optional<Account> account = Optional.ofNullable(this.factory.buildAccountObject(row));
+                if (account.isPresent()) {
+                    list.add(account.get());
+                }
             }
-        }
 
-        return list;
+            return list;
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
+        }
     }
 
     @Override
-    public int createAccount(String uniqueName, Type type) {
+    public int createAccount(String uniqueName, Type type) throws ApiException {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "INSERT INTO account(name,type) VALUES(?,?)", uniqueName,
-            String.valueOf(type.getValue()));
-
-        return getRowId(results);
+        try {
+            List<Map<Object, Object>> results = executeSqlAndReturnList(
+                "INSERT INTO account(name,type) VALUES(?,?)", uniqueName,
+                String.valueOf(type.getValue()));
+            return getRowId(results);
+        } catch (SQLException e) {
+            SQLiteException ex = (SQLiteException) e;
+            if (ex.getResultCode() == SQLiteErrorCode.SQLITE_CONSTRAINT) {
+                throw new ApiException(e);
+            }
+            throw new DataAccessException(e);
+        }
     }
 
     @Override
-    public boolean updateAccount(String uniqueName, String newUniqueName) {
+    public boolean updateAccount(String uniqueName, String newUniqueName) throws ApiException {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "UPDATE account SET name=? WHERE name=?", newUniqueName, uniqueName);
+        try {
+            List<Map<Object, Object>> results = executeSqlAndReturnList(
+                "UPDATE account SET name=? WHERE name=?", newUniqueName, uniqueName);
 
-        boolean retval = false;
-        if (getRowId(results) > 0) {
-            retval = true;
+            boolean retval = false;
+            if (getRowId(results) > 0) {
+                retval = true;
+            }
+            return retval;
+        } catch (SQLException e) {
+            SQLiteException ex = (SQLiteException) e;
+            if (ex.getResultCode() == SQLiteErrorCode.SQLITE_CONSTRAINT) {
+                throw new ApiException(e);
+            }
+            throw new DataAccessException(e);
         }
-        return retval;
     }
 
     @Override
     public boolean deleteAccount(int id) {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "DELETE FROM account WHERE id=?", String.valueOf(id));
+        try {
+            List<Map<Object, Object>> results = executeSqlAndReturnList(
+                "DELETE FROM account WHERE id=?", String.valueOf(id));
 
-        boolean retval = false;
-        if (getRowId(results) > 0) {
-            retval = true;
+            boolean retval = false;
+            if (getRowId(results) > 0) {
+                retval = true;
+            }
+
+            return retval;
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
         }
-        return retval;
     }
 
     private Optional<Account> processSingleResult(String sql, String... args) {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(sql, args);
-        if (results.isEmpty()) {
-            return Optional.ofNullable(null);
-        }
+        try {
+            List<Map<Object, Object>> results = executeSqlAndReturnList(sql, args);
+            if (results.isEmpty()) {
+                return Optional.ofNullable(null);
+            }
 
-        return Optional.ofNullable(this.factory.buildAccountObject(results.get(0)));
+            return Optional.ofNullable(this.factory.buildAccountObject(results.get(0)));
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
+        }
     }
 }

@@ -24,6 +24,7 @@
 
 package org.veary.pvs.sqlite.internal.dao;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,8 +35,12 @@ import javax.inject.Singleton;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.sqlite.SQLiteErrorCode;
+import org.sqlite.SQLiteException;
 import org.veary.pvs.core.Constants;
 import org.veary.pvs.dao.PeriodDataAccessObject;
+import org.veary.pvs.exceptions.ApiException;
+import org.veary.pvs.exceptions.DataAccessException;
 import org.veary.pvs.model.ModelFactory;
 import org.veary.pvs.model.Period;
 import org.veary.pvs.sqlite.ConnectionManager;
@@ -77,65 +82,93 @@ implements PeriodDataAccessObject {
     public List<Period> getPeriods() {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList("SELECT * from period");
+        try {
+            List<Map<Object, Object>> results = executeSqlAndReturnList("SELECT * from period");
 
-        List<Period> list = new ArrayList<>(results.size());
-        for (Map<Object, Object> row : results) {
-            Optional<Period> object = Optional.ofNullable(this.factory.buildPeriodObject(row));
-            if (object.isPresent()) {
-                list.add(object.get());
+            List<Period> list = new ArrayList<>(results.size());
+            for (Map<Object, Object> row : results) {
+                Optional<Period> object = Optional.ofNullable(this.factory.buildPeriodObject(row));
+                if (object.isPresent()) {
+                    list.add(object.get());
+                }
             }
-        }
 
-        return list;
+            return list;
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
+        }
     }
 
     @Override
-    public int createPeriod(String uniqueName) {
+    public int createPeriod(String uniqueName) throws ApiException {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "INSERT INTO period(name) VALUES(?)", uniqueName);
+        try {
+            List<Map<Object, Object>> results = executeSqlAndReturnList(
+                "INSERT INTO period(name) VALUES(?)", uniqueName);
 
-        return getRowId(results);
+            return getRowId(results);
+        } catch (SQLException e) {
+            SQLiteException ex = (SQLiteException) e;
+            if (ex.getResultCode() == SQLiteErrorCode.SQLITE_CONSTRAINT) {
+                throw new ApiException(e);
+            }
+            throw new DataAccessException(e);
+        }
     }
 
     @Override
-    public boolean updatePeriod(String uniqueName, String newUniqueName) {
+    public boolean updatePeriod(String uniqueName, String newUniqueName) throws ApiException {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "UPDATE period SET name=? WHERE name=?", newUniqueName, uniqueName);
+        try {
+            List<Map<Object, Object>> results = executeSqlAndReturnList(
+                "UPDATE period SET name=? WHERE name=?", newUniqueName, uniqueName);
 
-        boolean retval = false;
-        if (getRowId(results) > 0) {
-            retval = true;
+            boolean retval = false;
+            if (getRowId(results) > 0) {
+                retval = true;
+            }
+            return retval;
+        } catch (SQLException e) {
+            SQLiteException ex = (SQLiteException) e;
+            if (ex.getResultCode() == SQLiteErrorCode.SQLITE_CONSTRAINT) {
+                throw new ApiException(e);
+            }
+            throw new DataAccessException(e);
         }
-        return retval;
     }
 
     @Override
     public boolean deletePeriod(int id) {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(
-            "DELETE FROM period WHERE id=?", String.valueOf(id));
+        try {
+            List<Map<Object, Object>> results = executeSqlAndReturnList(
+                "DELETE FROM period WHERE id=?", String.valueOf(id));
 
-        boolean retval = false;
-        if (getRowId(results) > 0) {
-            retval = true;
+            boolean retval = false;
+            if (getRowId(results) > 0) {
+                retval = true;
+            }
+            return retval;
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
         }
-        return retval;
     }
 
     private Optional<Period> processSingleResult(String sql, String... args) {
         log.trace(Constants.LOG_CALLED);
 
-        List<Map<Object, Object>> results = executeSqlAndReturnList(sql, args);
-        if (results.isEmpty()) {
-            return Optional.ofNullable(null);
-        }
+        try {
+            List<Map<Object, Object>> results = executeSqlAndReturnList(sql, args);
+            if (results.isEmpty()) {
+                return Optional.ofNullable(null);
+            }
 
-        return Optional.ofNullable(this.factory.buildPeriodObject(results.get(0)));
+            return Optional.ofNullable(this.factory.buildPeriodObject(results.get(0)));
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
+        }
     }
 }
