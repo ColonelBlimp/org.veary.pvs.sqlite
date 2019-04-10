@@ -28,7 +28,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -115,7 +115,7 @@ public class AccountingSystemFacadeTest extends AbstractTomcatJndi {
         Assert.assertNotNull(facade);
 
         Assert.assertTrue(facade.postTransaction(
-            ZonedDateTime.now(),
+            LocalDate.now(),
             "Fuel for Land Rover",
             new Money(BigDecimal.valueOf(1000000, 2)),
             this.fromAccount,
@@ -137,7 +137,7 @@ public class AccountingSystemFacadeTest extends AbstractTomcatJndi {
         Assert.assertNotNull(facade);
 
         Assert.assertTrue(facade.postTransaction(
-            ZonedDateTime.now(),
+            LocalDate.now(),
             "Fuel for Land Rover",
             new Money(BigDecimal.valueOf(1000000, 2)),
             this.fromAccount,
@@ -146,7 +146,7 @@ public class AccountingSystemFacadeTest extends AbstractTomcatJndi {
             this.dayBook.getId()));
 
         Assert.assertTrue(facade.postTransaction(
-            ZonedDateTime.now(),
+            LocalDate.now(),
             "Fuel for Hilux",
             new Money(BigDecimal.valueOf(500000, 2)),
             this.fromAccount,
@@ -155,7 +155,7 @@ public class AccountingSystemFacadeTest extends AbstractTomcatJndi {
             this.dayBook.getId()));
 
         Assert.assertTrue(facade.postTransaction(
-            ZonedDateTime.now(),
+            LocalDate.now(),
             "Fuel for Hino",
             new Money(BigDecimal.valueOf(2500000, 2)),
             this.fromAccount,
@@ -175,7 +175,7 @@ public class AccountingSystemFacadeTest extends AbstractTomcatJndi {
         Assert.assertNotNull(facade);
 
         Assert.assertTrue(facade.postTransaction(
-            ZonedDateTime.now(),
+            LocalDate.now(),
             "Fuel for Land Rover",
             new Money(BigDecimal.valueOf(1000000, 2)),
             this.fromAccount,
@@ -184,7 +184,7 @@ public class AccountingSystemFacadeTest extends AbstractTomcatJndi {
             this.dayBook.getId()));
 
         Assert.assertTrue(facade.postTransaction(
-            ZonedDateTime.now(),
+            LocalDate.now(),
             "Fuel for Hilux",
             new Money(BigDecimal.valueOf(500000, 2)),
             this.fromAccount,
@@ -193,7 +193,7 @@ public class AccountingSystemFacadeTest extends AbstractTomcatJndi {
             this.dayBook.getId()));
 
         Assert.assertTrue(facade.postTransaction(
-            ZonedDateTime.now(),
+            LocalDate.now(),
             "Fuel for Hino",
             new Money(BigDecimal.valueOf(2500000, 2)),
             this.fromAccount,
@@ -202,7 +202,7 @@ public class AccountingSystemFacadeTest extends AbstractTomcatJndi {
             this.dayBook.getId()));
 
         Assert.assertTrue(facade.postTransaction(
-            ZonedDateTime.now(),
+            LocalDate.now(),
             "Fuel for Pickup",
             new Money(BigDecimal.valueOf(2500000, 2)),
             this.fromAccount,
@@ -211,7 +211,7 @@ public class AccountingSystemFacadeTest extends AbstractTomcatJndi {
             this.dayBook.getId()));
 
         Assert.assertTrue(facade.postTransaction(
-            ZonedDateTime.now(),
+            LocalDate.now(),
             "Fuel for Hino",
             new Money(BigDecimal.valueOf(3000000, 2)),
             this.fromAccount,

@@ -28,7 +28,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +70,7 @@ implements SystemDataAccessObject {
     }
 
     @Override
-    public boolean postTransaction(ZonedDateTime timestamp, String narrative, Money amount,
+    public boolean postTransaction(LocalDate timestamp, String narrative, Money amount,
         Account fromAccount, Account toAccount, String reference, int daybookId) {
         log.trace(Constants.LOG_CALLED);
         boolean retval = false;
@@ -214,7 +214,7 @@ implements SystemDataAccessObject {
     }
 
     private int createJournalEntry(Connection conn,
-        ZonedDateTime timestamp, String narrative, String reference, int daybookId) {
+        LocalDate timestamp, String narrative, String reference, int daybookId) {
         log.trace(Constants.LOG_CALLED);
         int journalId = 0;
 
