@@ -50,6 +50,8 @@ final class DatabaseManagerImpl implements DatabaseManager {
         createJournalTable();
         createPostingTable();
         createDayBookTable();
+        createConfigTable();
+        insertDefaultData();
     }
 
     @Override
@@ -59,6 +61,7 @@ final class DatabaseManagerImpl implements DatabaseManager {
         sqliteExecute("DROP TABLE IF EXISTS ledger"); //$NON-NLS-1$
         sqliteExecute("DROP TABLE IF EXISTS period"); //$NON-NLS-1$
         sqliteExecute("DROP TABLE IF EXISTS journal"); //$NON-NLS-1$
+        sqliteExecute("DROP TABLE IF EXISTS config"); //$NON-NLS-1$
     }
 
     private void createDayBookTable() {
@@ -113,10 +116,32 @@ final class DatabaseManagerImpl implements DatabaseManager {
         sqliteExecute(sb.toString());
     }
 
+    private void createConfigTable() {
+        StringBuilder sb = new StringBuilder("CREATE TABLE IF NOT EXISTS config ("); //$NON-NLS-1$
+        sb.append("current_daybook_id TEXT NOT NULL)");
+        sqliteExecute(sb.toString());
+    }
+
+    private void insertDefaultData() {
+        StringBuilder sb = new StringBuilder("INSERT INTO config(current_daybook_id) ");
+        sb.append("VALUES(1)");
+        sqliteInsert(sb.toString());
+    }
+
     private void sqliteExecute(String sql) {
         try (Connection conn = manager.getConnection()) {
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute(sql);
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
+        }
+    }
+
+    private void sqliteInsert(String sql) {
+        try (Connection conn = manager.getConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate(sql);
             }
         } catch (SQLException e) {
             throw new DataAccessException(e);
