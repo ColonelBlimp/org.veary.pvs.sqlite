@@ -40,7 +40,7 @@ public class GuiceSqliteJdbcModule extends AbstractModule {
     protected void configure() {
         bind(Context.class).to(InitialContext.class);
         bind(DataSource.class).toProvider(
-            JndiIntegration.fromJndi(DataSource.class, "java:/comp/env/jdbc/pvs"));
+            JndiIntegration.fromJndi(DataSource.class, "java:/comp/env/jdbc/pvs")); //$NON-NLS-1$
         bind(ConnectionManager.class).to(JndiConnectionManager.class);
         bind(DatabaseManager.class).to(DatabaseManagerImpl.class);
     }

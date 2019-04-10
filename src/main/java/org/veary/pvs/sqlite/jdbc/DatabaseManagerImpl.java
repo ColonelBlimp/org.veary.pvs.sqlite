@@ -62,27 +62,58 @@ final class DatabaseManagerImpl implements DatabaseManager {
     }
 
     private void createDayBookTable() {
-        sqliteExecute("CREATE TABLE IF NOT EXISTS daybook (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, name TEXT NOT NULL CHECK(length(name)>0) UNIQUE, period_id INTEGER NOT NULL, FOREIGN KEY(period_id) REFERENCES period(id) ON UPDATE RESTRICT ON DELETE RESTRICT)"); //$NON-NLS-1$
+        StringBuilder sb = new StringBuilder("CREATE TABLE IF NOT EXISTS daybook ("); //$NON-NLS-1$
+        sb.append("id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "); //$NON-NLS-1$
+        sb.append("name TEXT NOT NULL UNIQUE, "); //$NON-NLS-1$
+        sb.append("description TEXT, "); //$NON-NLS-1$
+        sb.append("period_id INTEGER NOT NULL, "); //$NON-NLS-1$
+        sb.append("FOREIGN KEY(period_id) REFERENCES period(id) "); //$NON-NLS-1$
+        sb.append("ON UPDATE RESTRICT ON DELETE RESTRICT)"); //$NON-NLS-1$
+        sqliteExecute(sb.toString());
     }
 
     private void createAccountTable() {
-        sqliteExecute("CREATE TABLE IF NOT EXISTS account (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, name TEXT NOT NULL CHECK(length(name)>0) UNIQUE, type INTEGER NOT NULL)"); //$NON-NLS-1$
+        StringBuilder sb = new StringBuilder("CREATE TABLE IF NOT EXISTS account ("); //$NON-NLS-1$
+        sb.append("id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "); //$NON-NLS-1$
+        sb.append("name TEXT NOT NULL UNIQUE, "); //$NON-NLS-1$
+        sb.append("description TEXT, "); //$NON-NLS-1$
+        sb.append("type INTEGER NOT NULL)"); //$NON-NLS-1$
+        sqliteExecute(sb.toString());
     }
 
     private void createPeriodTable() {
-        sqliteExecute("CREATE TABLE IF NOT EXISTS period (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, name TEXT NOT NULL CHECK(length(name)>0) UNIQUE)"); //$NON-NLS-1$
+        StringBuilder sb = new StringBuilder("CREATE TABLE IF NOT EXISTS period ("); //$NON-NLS-1$
+        sb.append("id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "); //$NON-NLS-1$
+        sb.append("description TEXT, "); //$NON-NLS-1$
+        sb.append("name TEXT NOT NULL UNIQUE)"); //$NON-NLS-1$
+        sqliteExecute(sb.toString());
     }
 
     private void createJournalTable() {
-        sqliteExecute("CREATE TABLE IF NOT EXISTS journal (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, date TEXT NOT NULL, ref TEXT NOT NULL UNIQUE, narrative TEXT NOT NULL, daybook_id INTEGER NOT NULL, FOREIGN KEY(daybook_id) REFERENCES daybook(id) ON UPDATE RESTRICT ON DELETE RESTRICT)"); //$NON-NLS-1$
+        StringBuilder sb = new StringBuilder("CREATE TABLE IF NOT EXISTS journal ("); //$NON-NLS-1$
+        sb.append("id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "); //$NON-NLS-1$
+        sb.append("date TEXT NOT NULL, "); //$NON-NLS-1$
+        sb.append("ref TEXT NOT NULL UNIQUE, "); //$NON-NLS-1$
+        sb.append("narrative TEXT NOT NULL, "); //$NON-NLS-1$
+        sb.append("daybook_id INTEGER NOT NULL, "); //$NON-NLS-1$
+        sb.append("FOREIGN KEY(daybook_id) REFERENCES daybook(id) "); //$NON-NLS-1$
+        sb.append("ON UPDATE RESTRICT ON DELETE RESTRICT)"); //$NON-NLS-1$
+        sqliteExecute(sb.toString());
     }
 
     private void createPostingTable() {
-        sqliteExecute("CREATE TABLE IF NOT EXISTS ledger (journal_id INTEGER NOT NULL, account_id INTEGER NOT NULL, amount INTEGER NOT NULL, FOREIGN KEY(journal_id) REFERENCES journal(id) ON UPDATE RESTRICT ON DELETE RESTRICT, FOREIGN KEY(account_id) REFERENCES account(id) ON UPDATE RESTRICT ON DELETE RESTRICT)"); //$NON-NLS-1$
+        StringBuilder sb = new StringBuilder("CREATE TABLE IF NOT EXISTS ledger ("); //$NON-NLS-1$
+        sb.append("journal_id INTEGER NOT NULL, "); //$NON-NLS-1$
+        sb.append("account_id INTEGER NOT NULL, "); //$NON-NLS-1$
+        sb.append("amount INTEGER NOT NULL, "); //$NON-NLS-1$
+        sb.append("FOREIGN KEY(journal_id) REFERENCES journal(id) "); //$NON-NLS-1$
+        sb.append("ON UPDATE RESTRICT ON DELETE RESTRICT, "); //$NON-NLS-1$
+        sb.append("FOREIGN KEY(account_id) REFERENCES account(id) "); //$NON-NLS-1$
+        sb.append("ON UPDATE RESTRICT ON DELETE RESTRICT)"); //$NON-NLS-1$
+        sqliteExecute(sb.toString());
     }
 
     private void sqliteExecute(String sql) {
-
         try (Connection conn = manager.getConnection()) {
             try (Statement stmt = conn.createStatement()) {
                 stmt.execute(sql);
