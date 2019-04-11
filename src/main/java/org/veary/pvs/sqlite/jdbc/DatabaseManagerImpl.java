@@ -43,6 +43,12 @@ import org.veary.pvs.model.Period;
 import org.veary.pvs.sqlite.ConnectionManager;
 import org.veary.pvs.sqlite.DatabaseManager;
 
+/**
+ * Responsible for creating the database and tables, and initial data.
+ *
+ * @author Marc L. Veary
+ * @since 1.0
+ */
 final class DatabaseManagerImpl implements DatabaseManager {
 
     private final ConnectionManager manager;
@@ -115,7 +121,7 @@ final class DatabaseManagerImpl implements DatabaseManager {
         StringBuilder sb = new StringBuilder("CREATE TABLE IF NOT EXISTS journal ("); //$NON-NLS-1$
         sb.append("id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE, "); //$NON-NLS-1$
         sb.append("date TEXT NOT NULL, "); //$NON-NLS-1$
-        sb.append("ref TEXT NOT NULL UNIQUE, "); //$NON-NLS-1$
+        sb.append("ref TEXT, "); //$NON-NLS-1$
         sb.append("narrative TEXT NOT NULL, "); //$NON-NLS-1$
         sb.append("daybook_id INTEGER NOT NULL, "); //$NON-NLS-1$
         sb.append("FOREIGN KEY(daybook_id) REFERENCES daybook(id) "); //$NON-NLS-1$
