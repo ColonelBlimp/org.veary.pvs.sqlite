@@ -25,6 +25,7 @@
 package org.veary.pvs.sqlite.jdbc;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
@@ -142,9 +143,22 @@ final class DatabaseManagerImpl implements DatabaseManager {
 
     private void insertDefaultData() throws ApiException {
 
-        String sql = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='config'";
+        String sql = "SELECT current_daybook_id FROM config";
 
-        if (!sqliteExecute(sql)) {
+        boolean noData = true;
+        try (Connection conn = manager.getConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                try (ResultSet rset = stmt.executeQuery(sql)) {
+                    if (rset.next()) {
+                        noData = false;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e);
+        }
+
+        if (noData) {
             StringBuilder sb = new StringBuilder("INSERT INTO config(current_daybook_id) ");
             sb.append("VALUES(1)");
             sqliteInsert(sb.toString());
