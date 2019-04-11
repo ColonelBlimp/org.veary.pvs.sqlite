@@ -141,27 +141,31 @@ final class DatabaseManagerImpl implements DatabaseManager {
     }
 
     private void insertDefaultData() throws ApiException {
-        StringBuilder sb = new StringBuilder("INSERT INTO config(current_daybook_id) ");
-        sb.append("VALUES(1)");
-        sqliteInsert(sb.toString());
-        sb.setLength(0);
 
-        int year = LocalDate.now().getYear();
-        this.periodFacade.createPeriod(String.valueOf(year));
-        Optional<Period> pOject = this.periodFacade.getPeriodByName(String.valueOf(year));
-        if (!pOject.isPresent()) {
-            throw new AssertionError("Cannot read Period [" + year + "] from the database");
+        String sql = "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='config'";
+
+        if (!sqliteExecute(sql)) {
+            StringBuilder sb = new StringBuilder("INSERT INTO config(current_daybook_id) ");
+            sb.append("VALUES(1)");
+            sqliteInsert(sb.toString());
+
+            int year = LocalDate.now().getYear();
+            this.periodFacade.createPeriod(String.valueOf(year));
+            Optional<Period> pOject = this.periodFacade.getPeriodByName(String.valueOf(year));
+            if (!pOject.isPresent()) {
+                throw new AssertionError("Cannot read Period [" + year + "] from the database");
+            }
+            Period period = pOject.get();
+
+            Month month = LocalDate.now().getMonth();
+            this.daybookFacade.createDayBook(month.toString(), period.getId());
         }
-        Period period = pOject.get();
-
-        Month month = LocalDate.now().getMonth();
-        this.daybookFacade.createDayBook(month.toString(), period.getId());
     }
 
-    private void sqliteExecute(String sql) {
+    private boolean sqliteExecute(String sql) {
         try (Connection conn = manager.getConnection()) {
             try (Statement stmt = conn.createStatement()) {
-                stmt.execute(sql);
+                return stmt.execute(sql);
             }
         } catch (SQLException e) {
             throw new DataAccessException(e);

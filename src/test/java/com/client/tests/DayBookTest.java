@@ -110,8 +110,7 @@ public class DayBookTest extends AbstractTomcatJndi {
         List<DayBook> list = facade.getDayBooks();
         Assert.assertNotNull(list);
         Assert.assertFalse(list.isEmpty());
-        // Default data adds one to the list!
-        Assert.assertTrue(5 == list.size());
+        Assert.assertTrue(4 == list.size());
 
         for (DayBook book : list) {
             Assert.assertTrue(facade.deleteDayBook(book.getId()));
@@ -134,7 +133,7 @@ public class DayBookTest extends AbstractTomcatJndi {
         List<DayBook> list = facade.getDayBooks();
         Assert.assertNotNull(list);
         Assert.assertFalse(list.isEmpty());
-        Assert.assertTrue(5 == list.size());
+        Assert.assertTrue(4 == list.size());
 
         for (DayBook book : list) {
             String name = book.getName();
@@ -144,7 +143,7 @@ public class DayBookTest extends AbstractTomcatJndi {
         list = facade.getDayBooks();
         Assert.assertNotNull(list);
         Assert.assertFalse(list.isEmpty());
-        Assert.assertTrue(5 == list.size());
+        Assert.assertTrue(4 == list.size());
 
         for (DayBook book : list) {
             Assert.assertTrue(book.getName().endsWith("X"));
