@@ -27,20 +27,33 @@ package org.veary.pvs.sqlite.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
+import org.veary.pvs.api.DayBookFacade;
+import org.veary.pvs.api.PeriodFacade;
+import org.veary.pvs.exceptions.ApiException;
+import org.veary.pvs.exceptions.CoreException;
 import org.veary.pvs.exceptions.DataAccessException;
+import org.veary.pvs.model.Period;
 import org.veary.pvs.sqlite.ConnectionManager;
 import org.veary.pvs.sqlite.DatabaseManager;
 
 final class DatabaseManagerImpl implements DatabaseManager {
 
-    private ConnectionManager manager;
+    private final ConnectionManager manager;
+    private final PeriodFacade periodFacade;
+    private final DayBookFacade daybookFacade;
 
     @Inject
-    protected DatabaseManagerImpl(ConnectionManager manager) {
+    protected DatabaseManagerImpl(ConnectionManager manager,
+        PeriodFacade periodFacade, DayBookFacade daybookFacade) {
         this.manager = manager;
+        this.periodFacade = periodFacade;
+        this.daybookFacade = daybookFacade;
     }
 
     @Override
@@ -51,7 +64,12 @@ final class DatabaseManagerImpl implements DatabaseManager {
         createPostingTable();
         createDayBookTable();
         createConfigTable();
-        insertDefaultData();
+
+        try {
+            insertDefaultData();
+        } catch (ApiException e) {
+            throw new CoreException(e);
+        }
     }
 
     @Override
@@ -122,10 +140,22 @@ final class DatabaseManagerImpl implements DatabaseManager {
         sqliteExecute(sb.toString());
     }
 
-    private void insertDefaultData() {
+    private void insertDefaultData() throws ApiException {
         StringBuilder sb = new StringBuilder("INSERT INTO config(current_daybook_id) ");
         sb.append("VALUES(1)");
         sqliteInsert(sb.toString());
+        sb.setLength(0);
+
+        int year = LocalDate.now().getYear();
+        this.periodFacade.createPeriod(String.valueOf(year));
+        Optional<Period> pOject = this.periodFacade.getPeriodByName(String.valueOf(year));
+        if (!pOject.isPresent()) {
+            throw new AssertionError("Cannot read Period [" + year + "] from the database");
+        }
+        Period period = pOject.get();
+
+        Month month = LocalDate.now().getMonth();
+        this.daybookFacade.createDayBook(month.toString(), period.getId());
     }
 
     private void sqliteExecute(String sql) {

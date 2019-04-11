@@ -87,7 +87,8 @@ public class PeriodFacadeTest extends AbstractTomcatJndi {
         List<Period> list = facade.getPeriods();
         Assert.assertNotNull(list);
         Assert.assertFalse(list.isEmpty());
-        Assert.assertTrue(4 == list.size());
+        // Default data adds one to the list!
+        Assert.assertTrue(5 == list.size());
 
         for (Period period : list) {
             Assert.assertTrue(facade.deletePeriod(period.getId()));
@@ -109,7 +110,7 @@ public class PeriodFacadeTest extends AbstractTomcatJndi {
         List<Period> list = facade.getPeriods();
         Assert.assertNotNull(list);
         Assert.assertFalse(list.isEmpty());
-        Assert.assertTrue(3 == list.size());
+        Assert.assertTrue(4 == list.size());
 
 
         for (Period period : list) {
@@ -120,7 +121,7 @@ public class PeriodFacadeTest extends AbstractTomcatJndi {
         list = facade.getPeriods();
         Assert.assertNotNull(list);
         Assert.assertFalse(list.isEmpty());
-        Assert.assertTrue(3 == list.size());
+        Assert.assertTrue(4 == list.size());
 
         for (Period period : list) {
             Assert.assertTrue(period.getName().endsWith("X"));
