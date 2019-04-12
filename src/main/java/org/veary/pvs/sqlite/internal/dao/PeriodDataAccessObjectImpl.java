@@ -41,6 +41,7 @@ import org.veary.pvs.core.Constants;
 import org.veary.pvs.dao.PeriodDataAccessObject;
 import org.veary.pvs.exceptions.ApiException;
 import org.veary.pvs.exceptions.DataAccessException;
+import org.veary.pvs.exceptions.ValidationException;
 import org.veary.pvs.model.ModelFactory;
 import org.veary.pvs.model.Period;
 import org.veary.pvs.sqlite.ConnectionManager;
@@ -94,7 +95,7 @@ implements PeriodDataAccessObject {
             }
 
             return list;
-        } catch (SQLException e) {
+        } catch (SQLException | ValidationException e) {
             throw new DataAccessException(e);
         }
     }
@@ -167,7 +168,7 @@ implements PeriodDataAccessObject {
             }
 
             return Optional.ofNullable(this.factory.buildPeriodObject(results.get(0)));
-        } catch (SQLException e) {
+        } catch (SQLException | ValidationException e) {
             throw new DataAccessException(e);
         }
     }

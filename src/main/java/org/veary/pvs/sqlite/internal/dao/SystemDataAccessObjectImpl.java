@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,6 +43,7 @@ import org.veary.pvs.core.Constants;
 import org.veary.pvs.core.Money;
 import org.veary.pvs.dao.SystemDataAccessObject;
 import org.veary.pvs.exceptions.DataAccessException;
+import org.veary.pvs.exceptions.ValidationException;
 import org.veary.pvs.model.Account;
 import org.veary.pvs.model.DayBook;
 import org.veary.pvs.model.LedgerEntry;
@@ -55,6 +57,7 @@ import org.veary.pvs.sqlite.ConnectionManager;
  * @author Marc L. Veary
  * @since 1.0
  */
+@Singleton
 final class SystemDataAccessObjectImpl extends AbstractDataAccessObject
 implements SystemDataAccessObject {
 
@@ -103,10 +106,10 @@ implements SystemDataAccessObject {
     }
 
     @Override
-    public List<Transaction> getTransactionsForDayBook(int daybookId) {
+    public List<Transaction> getTransactionsForDayBook(DayBook dayBook) {
         log.trace(Constants.LOG_CALLED);
         return getTransactions("SELECT * FROM journal WHERE daybook_id=?",
-            String.valueOf(daybookId));
+            String.valueOf(dayBook.getId()));
     }
 
     @Override
@@ -148,7 +151,7 @@ implements SystemDataAccessObject {
             }
 
             return list;
-        } catch (SQLException e) {
+        } catch (SQLException | ValidationException e) {
             throw new DataAccessException(e);
         }
     }
@@ -171,12 +174,13 @@ implements SystemDataAccessObject {
             }
 
             return list;
-        } catch (SQLException e) {
+        } catch (SQLException | ValidationException e) {
             throw new DataAccessException(e);
         }
     }
 
-    private List<LedgerEntry> getLedgerEntriesForJournalId(int journalId) throws SQLException {
+    private List<LedgerEntry> getLedgerEntriesForJournalId(int journalId)
+        throws SQLException, ValidationException {
         log.trace(Constants.LOG_CALLED);
 
         List<Map<Object, Object>> results = executeSqlAndReturnList(

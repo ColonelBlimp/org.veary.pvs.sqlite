@@ -41,6 +41,7 @@ import org.veary.pvs.core.Constants;
 import org.veary.pvs.dao.DayBookDataAccessObject;
 import org.veary.pvs.exceptions.ApiException;
 import org.veary.pvs.exceptions.DataAccessException;
+import org.veary.pvs.exceptions.ValidationException;
 import org.veary.pvs.model.DayBook;
 import org.veary.pvs.model.ModelFactory;
 import org.veary.pvs.sqlite.ConnectionManager;
@@ -92,7 +93,7 @@ implements DayBookDataAccessObject {
             }
 
             return list;
-        } catch (SQLException e) {
+        } catch (SQLException | ValidationException e) {
             throw new DataAccessException(e);
         }
     }
@@ -166,7 +167,7 @@ implements DayBookDataAccessObject {
             }
 
             return Optional.ofNullable(this.factory.buildDayBookObject(results.get(0)));
-        } catch (SQLException e) {
+        } catch (SQLException | ValidationException e) {
             throw new DataAccessException(e);
         }
     }

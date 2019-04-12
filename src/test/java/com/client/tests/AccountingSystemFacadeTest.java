@@ -163,7 +163,7 @@ public class AccountingSystemFacadeTest extends AbstractTomcatJndi {
             "PV20190331003",
             this.dayBook.getId()));
 
-        List<Transaction> list = facade.getTransactionsForDayBook(this.dayBook.getId());
+        List<Transaction> list = facade.getTransactionsForDayBook(this.dayBook);
         Assert.assertNotNull(list);
         Assert.assertFalse(list.isEmpty());
         Assert.assertTrue(3 == list.size());

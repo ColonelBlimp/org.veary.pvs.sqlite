@@ -41,6 +41,7 @@ import org.veary.pvs.core.Constants;
 import org.veary.pvs.dao.AccountDataAccessObject;
 import org.veary.pvs.exceptions.ApiException;
 import org.veary.pvs.exceptions.DataAccessException;
+import org.veary.pvs.exceptions.ValidationException;
 import org.veary.pvs.model.Account;
 import org.veary.pvs.model.Account.Type;
 import org.veary.pvs.model.ModelFactory;
@@ -93,7 +94,7 @@ implements AccountDataAccessObject {
             }
 
             return list;
-        } catch (SQLException e) {
+        } catch (SQLException | ValidationException e) {
             throw new DataAccessException(e);
         }
     }
@@ -167,7 +168,7 @@ implements AccountDataAccessObject {
             }
 
             return Optional.ofNullable(this.factory.buildAccountObject(results.get(0)));
-        } catch (SQLException e) {
+        } catch (SQLException | ValidationException e) {
             throw new DataAccessException(e);
         }
     }
