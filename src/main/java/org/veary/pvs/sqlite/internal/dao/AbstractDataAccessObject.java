@@ -35,10 +35,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.sqlite.SQLiteErrorCode;
+import org.sqlite.SQLiteException;
 import org.veary.pvs.core.Constants;
+import org.veary.pvs.exceptions.ApiException;
 import org.veary.pvs.sqlite.ConnectionManager;
 
 /**
@@ -193,5 +197,13 @@ abstract class AbstractDataAccessObject {
         } catch (SQLException e) {
             log.error("Unexpected error (ignored) {}", e); //$NON-NLS-1$
         }
+    }
+
+    protected Optional<ApiException> handleException(SQLException e) {
+        SQLiteException ex = (SQLiteException) e;
+        if (ex.getResultCode() == SQLiteErrorCode.SQLITE_CONSTRAINT) {
+            return Optional.of(new ApiException(e));
+        }
+        return Optional.ofNullable(null);
     }
 }

@@ -35,8 +35,6 @@ import javax.inject.Singleton;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.sqlite.SQLiteErrorCode;
-import org.sqlite.SQLiteException;
 import org.veary.pvs.core.Constants;
 import org.veary.pvs.dao.DayBookDataAccessObject;
 import org.veary.pvs.exceptions.ApiException;
@@ -109,9 +107,9 @@ implements DayBookDataAccessObject {
 
             return getRowId(results);
         } catch (SQLException e) {
-            SQLiteException ex = (SQLiteException) e;
-            if (ex.getResultCode() == SQLiteErrorCode.SQLITE_CONSTRAINT) {
-                throw new ApiException(e);
+            Optional<ApiException> object = handleException(e);
+            if (object.isPresent()) {
+                throw object.get();
             }
             throw new DataAccessException(e);
         }
@@ -131,9 +129,9 @@ implements DayBookDataAccessObject {
             }
             return retval;
         } catch (SQLException e) {
-            SQLiteException ex = (SQLiteException) e;
-            if (ex.getResultCode() == SQLiteErrorCode.SQLITE_CONSTRAINT) {
-                throw new ApiException(e);
+            Optional<ApiException> object = handleException(e);
+            if (object.isPresent()) {
+                throw object.get();
             }
             throw new DataAccessException(e);
         }
