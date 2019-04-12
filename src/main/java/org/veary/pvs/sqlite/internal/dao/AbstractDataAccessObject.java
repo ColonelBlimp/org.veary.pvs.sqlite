@@ -199,6 +199,11 @@ abstract class AbstractDataAccessObject {
         }
     }
 
+    /**
+     * Handles conversion of a specific SQLiteException code into a checked {@code ApiException}.
+     * @param e the SQLException
+     * @return an Optional
+     */
     protected Optional<ApiException> handleException(SQLException e) {
         SQLiteException ex = (SQLiteException) e;
         if (ex.getResultCode() == SQLiteErrorCode.SQLITE_CONSTRAINT) {
