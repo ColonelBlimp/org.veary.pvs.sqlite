@@ -24,26 +24,22 @@
 
 package org.veary.pvs.sqlite;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.veary.pvs.api.AccountFacade;
 import org.veary.pvs.api.GuiceApiModule;
+import org.veary.pvs.api.PeriodFacade;
 import org.veary.pvs.exceptions.ApiException;
 import org.veary.pvs.exceptions.DataAccessException;
-import org.veary.pvs.sqlite.ConnectionManager;
 
 import com.client.tests.AbstractTomcatJndi;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-public class DaoExceptionTest extends AbstractTomcatJndi {
+public class PeriodDaoExceptionTest extends AbstractTomcatJndi {
 
     private Injector injector;
 
@@ -65,18 +61,50 @@ public class DaoExceptionTest extends AbstractTomcatJndi {
     }
 
     @Test
-    public void accountDaoExceptionOne() throws ApiException {
-        ConnectionManager manager = injector.getInstance(ConnectionManager.class);
-        Assert.assertNotNull(manager);
-        try {
-            Connection conn = manager.getConnection();
-        } catch (SQLException e) {
-            System.out.println(">>> " + e.getMessage());
-        }
-        
+    public void create() throws ApiException {
         thrown.expect(DataAccessException.class);
-        AccountFacade facade = injector.getInstance(AccountFacade.class);
+        PeriodFacade facade = injector.getInstance(PeriodFacade.class);
         Assert.assertNotNull(facade);
-        facade.createAssetAccount("Cash");
+        facade.createPeriod("Year");
+    }
+    
+    @Test
+    public void getAll() throws ApiException {
+        thrown.expect(DataAccessException.class);
+        PeriodFacade facade = injector.getInstance(PeriodFacade.class);
+        Assert.assertNotNull(facade);
+        facade.getPeriods();
+    }
+
+    @Test
+    public void update() throws ApiException {
+        thrown.expect(DataAccessException.class);
+        PeriodFacade facade = injector.getInstance(PeriodFacade.class);
+        Assert.assertNotNull(facade);
+        facade.updatePeriod("Test", "Tester");
+    }
+
+    @Test
+    public void getById() {
+        thrown.expect(DataAccessException.class);
+        PeriodFacade facade = injector.getInstance(PeriodFacade.class);
+        Assert.assertNotNull(facade);
+        facade.getPeriodById(1);
+    }
+
+    @Test
+    public void getByName() {
+        thrown.expect(DataAccessException.class);
+        PeriodFacade facade = injector.getInstance(PeriodFacade.class);
+        Assert.assertNotNull(facade);
+        facade.getPeriodByName("Test");
+    }
+    
+    @Test
+    public void delete() {
+        thrown.expect(DataAccessException.class);
+        PeriodFacade facade = injector.getInstance(PeriodFacade.class);
+        Assert.assertNotNull(facade);
+        facade.deletePeriod(1);
     }
 }
