@@ -27,12 +27,14 @@ package org.veary.pvs.sqlite.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.sqlite.SQLiteErrorCode;
+import org.sqlite.SQLiteException;
 import org.veary.pvs.sqlite.ConnectionManager;
 
 public class JndiConnectionManagerMock implements ConnectionManager {
 
     @Override
     public Connection getConnection() throws SQLException {
-        throw new SQLException("Test Exception Message");
+        throw new SQLiteException("Test Exception Message", SQLiteErrorCode.SQLITE_CONSTRAINT_UNIQUE);
     }
 }

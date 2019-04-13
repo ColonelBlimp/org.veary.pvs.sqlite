@@ -24,10 +24,20 @@
 
 package org.veary.pvs.sqlite;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.veary.pvs.api.AccountFacade;
 import org.veary.pvs.api.GuiceApiModule;
+import org.veary.pvs.exceptions.ApiException;
+import org.veary.pvs.exceptions.DataAccessException;
+import org.veary.pvs.sqlite.ConnectionManager;
 
 import com.client.tests.AbstractTomcatJndi;
 import com.google.inject.Guice;
@@ -37,6 +47,9 @@ public class DaoExceptionTest extends AbstractTomcatJndi {
 
     private Injector injector;
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     @Before
     public void setup() {
         tomcatJndiSetup();
@@ -44,19 +57,26 @@ public class DaoExceptionTest extends AbstractTomcatJndi {
             new GuiceApiModule(),
             new GuiceSqliteTestModule()
             );
-//        DatabaseManager manager = injector.getInstance(DatabaseManager.class);
-//        manager.createTables();
     }
 
     @After
     public void teardown() {
-//        DatabaseManager dbManager = injector.getInstance(DatabaseManager.class);
-//        dbManager.dropTables();
         this.tomcatJNDI.tearDown();
     }
 
     @Test
-    public void accountDaoExceptionOne() {
+    public void accountDaoExceptionOne() throws ApiException {
+        ConnectionManager manager = injector.getInstance(ConnectionManager.class);
+        Assert.assertNotNull(manager);
+        try {
+            Connection conn = manager.getConnection();
+        } catch (SQLException e) {
+            System.out.println(">>> " + e.getMessage());
+        }
         
+        thrown.expect(DataAccessException.class);
+        AccountFacade facade = injector.getInstance(AccountFacade.class);
+        Assert.assertNotNull(facade);
+        facade.createAssetAccount("Cash");
     }
 }
